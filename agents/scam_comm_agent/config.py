@@ -1,8 +1,8 @@
 """
-config.py — Configuration for the Currency Agent.
+config.py — Configuration for the Scam Communication Agent.
 
 All paths and hyperparameters are read from environment variables or YAML
-config files so nothing is hardcoded.  The ``CurrencyAgentConfig`` object is
+config files so nothing is hardcoded.  The ``ScamCommAgentConfig`` object is
 the single authority for every tuneable in this agent.
 """
 
@@ -18,60 +18,58 @@ from pydantic_settings import BaseSettings
 # Resolve project root so relative config paths work regardless of CWD
 # ---------------------------------------------------------------------------
 
-# agents/currency_agent/ → agents/ → project root
+# agents/scam_comm_agent/ → agents/ → project root
 _AGENT_DIR = Path(__file__).resolve().parent
 _PROJECT_ROOT = _AGENT_DIR.parent.parent
 
 
-class CurrencyAgentConfig(BaseSettings):
-    """Runtime configuration for the Currency Agent.
+class ScamCommAgentConfig(BaseSettings):
+    """Runtime configuration for the Scam Communication Agent.
 
-    Values are read from environment variables (``CURRENCY_*`` prefix) so they
+    Values are read from environment variables (``SCAM_COMM_*`` prefix) so they
     can be overridden without touching YAML in CI/CD or Docker.  Defaults
     correspond to the canonical paths agreed in ``configs/models.yaml`` and
     ``PROJECT_STRUCTURE.md``.
     """
 
     # ------------------------------------------------------------------
-    # Model artifacts
+    # SMS model artifacts
     # ------------------------------------------------------------------
-    model_path: Path = Field(
-        default=_PROJECT_ROOT / "models" / "currency" / "mobilenet_v2.pt",
-        description="Path to the exported TorchScript / state-dict file.",
+    sms_model_path: Path = Field(
+        default=_PROJECT_ROOT / "models" / "sms" / "sms_model.pkl",
+        description="Path to the trained CalibratedClassifierCV(LinearSVC) model.",
     )
-    class_names_path: Path = Field(
-        default=_PROJECT_ROOT / "models" / "currency" / "class_names.json",
-        description="Path to the class_names.json produced during training.",
+    tfidf_path: Path = Field(
+        default=_PROJECT_ROOT / "models" / "sms" / "tfidf_vectorizer.pkl",
+        description="Path to the fitted TF-IDF vectorizer.",
     )
 
     # ------------------------------------------------------------------
-    # Preprocessing
+    # Phishing URL model artifacts
     # ------------------------------------------------------------------
-    image_size: tuple[int, int] = Field(
-        default=(224, 224),
-        description="(height, width) expected by MobileNetV2.",
-    )
-
-    # ImageNet normalisation constants — these must match the values used
-    # during training (standard torchvision defaults).
-    normalize_mean: tuple[float, float, float] = Field(
-        default=(0.485, 0.456, 0.406),
-        description="Per-channel mean for ImageNet normalisation.",
-    )
-    normalize_std: tuple[float, float, float] = Field(
-        default=(0.229, 0.224, 0.225),
-        description="Per-channel std for ImageNet normalisation.",
+    phishing_model_path: Path = Field(
+        default=_PROJECT_ROOT / "models" / "phishing" / "phishing_model.joblib",
+        description="Path to the trained XGBoost phishing model.",
     )
 
     # ------------------------------------------------------------------
     # Inference thresholds
     # ------------------------------------------------------------------
-    confidence_threshold: float = Field(
+    sms_confidence_threshold: float = Field(
         default=0.70,
         ge=0.0,
         le=1.0,
         description=(
-            "Minimum confidence required to emit a definitive verdict. "
+            "Minimum confidence required to emit a definitive SMS verdict. "
+            "Predictions below this threshold are labelled 'suspicious'."
+        ),
+    )
+    url_confidence_threshold: float = Field(
+        default=0.70,
+        ge=0.0,
+        le=1.0,
+        description=(
+            "Minimum confidence required to emit a definitive URL verdict. "
             "Predictions below this threshold are labelled 'suspicious'."
         ),
     )
@@ -88,11 +86,11 @@ class CurrencyAgentConfig(BaseSettings):
         description="Python logging level (DEBUG, INFO, WARNING, ERROR).",
     )
 
-    model_config = {"env_prefix": "CURRENCY_", "env_file": ".env", "extra": "ignore"}
+    model_config = {"env_prefix": "SCAM_COMM_", "env_file": ".env", "extra": "ignore"}
 
 
 # ---------------------------------------------------------------------------
 # Module-level singleton — import this everywhere instead of instantiating
 # ---------------------------------------------------------------------------
 
-settings = CurrencyAgentConfig()
+settings = ScamCommAgentConfig()

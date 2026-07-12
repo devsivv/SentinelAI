@@ -1,19 +1,17 @@
-# models.yaml — which trained model artifact each agent currently loads
-# Updated whenever an experiment (experiments/<domain>/exp_NN_*) is promoted.
-fraud_agent:
-  model_path: models/fraud/model.pkl
-  promoted_from: null   # e.g. "exp_02_lightgbm"
+# models.yaml — canonical model artifact paths
+# Used by agents and orchestrator for centralized reference.
 
-scam_comm_agent:
-  sms_model_path: models/scam/sms_model.pkl
-  url_model_path: models/scam/url_model.pkl
-  promoted_from: null
+models:
+  currency:
+    model_path: models/currency/mobilenet_v2.pt
+    class_names_path: models/currency/class_names.json
 
-currency_agent:
-  model_path: models/currency/model.pt
-  promoted_from: null
+  sms:
+    model_path: models/sms/sms_model.pkl
+    tfidf_path: models/sms/tfidf_vectorizer.pkl
 
-voice_agent:
-  stt_model: whisper-small          # pretrained, via faster-whisper
-  spoof_model_path: models/voice/asvspoof_checkpoint.pt
-  promoted_from: null
+  phishing:
+    model_path: models/phishing/phishing_model.joblib
+
+  transactions:
+    model_path: models/transactions/paysim_model.joblib

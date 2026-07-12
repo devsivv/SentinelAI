@@ -1,8 +1,8 @@
 """
-config.py — Configuration for the Currency Agent.
+config.py — Configuration for the Fraud Agent.
 
 All paths and hyperparameters are read from environment variables or YAML
-config files so nothing is hardcoded.  The ``CurrencyAgentConfig`` object is
+config files so nothing is hardcoded.  The ``FraudAgentConfig`` object is
 the single authority for every tuneable in this agent.
 """
 
@@ -18,15 +18,15 @@ from pydantic_settings import BaseSettings
 # Resolve project root so relative config paths work regardless of CWD
 # ---------------------------------------------------------------------------
 
-# agents/currency_agent/ → agents/ → project root
+# agents/fraud_agent/ → agents/ → project root
 _AGENT_DIR = Path(__file__).resolve().parent
 _PROJECT_ROOT = _AGENT_DIR.parent.parent
 
 
-class CurrencyAgentConfig(BaseSettings):
-    """Runtime configuration for the Currency Agent.
+class FraudAgentConfig(BaseSettings):
+    """Runtime configuration for the Fraud Agent.
 
-    Values are read from environment variables (``CURRENCY_*`` prefix) so they
+    Values are read from environment variables (``FRAUD_*`` prefix) so they
     can be overridden without touching YAML in CI/CD or Docker.  Defaults
     correspond to the canonical paths agreed in ``configs/models.yaml`` and
     ``PROJECT_STRUCTURE.md``.
@@ -36,31 +36,21 @@ class CurrencyAgentConfig(BaseSettings):
     # Model artifacts
     # ------------------------------------------------------------------
     model_path: Path = Field(
-        default=_PROJECT_ROOT / "models" / "currency" / "mobilenet_v2.pt",
-        description="Path to the exported TorchScript / state-dict file.",
-    )
-    class_names_path: Path = Field(
-        default=_PROJECT_ROOT / "models" / "currency" / "class_names.json",
-        description="Path to the class_names.json produced during training.",
+        default=_PROJECT_ROOT / "models" / "transactions" / "paysim_model.joblib",
+        description="Path to the exported XGBoost fraud detection model (joblib).",
     )
 
     # ------------------------------------------------------------------
-    # Preprocessing
+    # Feature engineering constants
     # ------------------------------------------------------------------
-    image_size: tuple[int, int] = Field(
-        default=(224, 224),
-        description="(height, width) expected by MobileNetV2.",
-    )
-
-    # ImageNet normalisation constants — these must match the values used
-    # during training (standard torchvision defaults).
-    normalize_mean: tuple[float, float, float] = Field(
-        default=(0.485, 0.456, 0.406),
-        description="Per-channel mean for ImageNet normalisation.",
-    )
-    normalize_std: tuple[float, float, float] = Field(
-        default=(0.229, 0.224, 0.225),
-        description="Per-channel std for ImageNet normalisation.",
+    large_transaction_threshold: float = Field(
+        default=1_200_000.0,
+        gt=0.0,
+        description=(
+            "Amount above which a transaction is flagged as 'large'. "
+            "Corresponds to the 95th-percentile of transaction amounts in the "
+            "PaySim training dataset."
+        ),
     )
 
     # ------------------------------------------------------------------
@@ -88,11 +78,11 @@ class CurrencyAgentConfig(BaseSettings):
         description="Python logging level (DEBUG, INFO, WARNING, ERROR).",
     )
 
-    model_config = {"env_prefix": "CURRENCY_", "env_file": ".env", "extra": "ignore"}
+    model_config = {"env_prefix": "FRAUD_", "env_file": ".env", "extra": "ignore"}
 
 
 # ---------------------------------------------------------------------------
 # Module-level singleton — import this everywhere instead of instantiating
 # ---------------------------------------------------------------------------
 
-settings = CurrencyAgentConfig()
+settings = FraudAgentConfig()
