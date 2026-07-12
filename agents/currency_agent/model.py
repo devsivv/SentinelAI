@@ -104,15 +104,17 @@ def _load_model(path: Optional[Path] = None) -> nn.Module:
 
     log.info("Loading MobileNetV2 model from '%s' …", resolved)
 
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # Attempt TorchScript load first (exported via torch.jit.save).
     # Fall back to state-dict load (exported via torch.save on the raw module).
     try:
-        model = torch.jit.load(str(resolved), map_location="cpu")
+        model = torch.jit.load(str(resolved), map_location=device)
         log.info("Loaded as TorchScript module.")
     except RuntimeError:
         log.debug("TorchScript load failed — attempting state-dict load.")
         model = _load_from_state_dict(resolved)
 
+    model.to(device)
     model.eval()
     return model
 
@@ -131,7 +133,8 @@ def _load_from_state_dict(path: Path) -> nn.Module:
     in_features = backbone.classifier[1].in_features
     backbone.classifier[1] = nn.Linear(in_features, num_classes)
 
-    state = torch.load(str(path), map_location="cpu", weights_only=True)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    state = torch.load(str(path), map_location=device, weights_only=True)
 
     # The checkpoint may be a bare state-dict or wrapped as {"model_state_dict": ...}
     if isinstance(state, dict) and "model_state_dict" in state:
@@ -211,6 +214,8 @@ def run_inference(
     RuntimeError
         If the forward pass fails (shape mismatch, CUDA OOM, etc.).
     """
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    tensor = tensor.to(device)
     model = get_model(model_path)
 
     with torch.no_grad():
