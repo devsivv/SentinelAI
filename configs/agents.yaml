@@ -1,0 +1,24 @@
+# agents.yaml — which agents are active this build; Orchestrator reads this
+# to decide fan-out targets (SYSTEM_RULES.md: adding/removing an agent = config change)
+active_agents:
+  - name: fraud_agent
+    track: mvp
+    url: http://localhost:8001
+  - name: scam_comm_agent
+    track: mvp
+    url: http://localhost:8002
+  # - name: currency_agent
+  #   track: stretch
+  #   url: http://localhost:8003
+  # - name: voice_agent
+  #   track: stretch
+  #   url: http://localhost:8004
+  # - name: graph_agent
+  #   track: stretch
+  #   url: http://localhost:8005
+  # - name: geo_agent
+  #   track: stretch
+  #   url: http://localhost:8006
+
+fusion_agent:
+  url: http://localhost:8010

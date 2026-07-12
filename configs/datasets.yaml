@@ -1,0 +1,22 @@
+# datasets.yaml — dataset locations and sources, per docs/api.md §Data Sources
+transactions:
+  source: "Kaggle: Credit Card Fraud Detection (ULB) / IEEE-CIS Fraud Detection"
+  path: datasets/transactions/
+  imbalanced: true
+
+sms:
+  source: "Kaggle SMS Spam Collection + UCI SMS Spam + hand-labeled India-specific scam set"
+  path: datasets/sms/
+  hand_labeled_path: datasets/sms/hand_labeled/
+
+phishing:
+  source: "Kaggle Phishing Website Dataset (UCI) / PhishTank export"
+  path: datasets/phishing/
+
+currency:      # stretch
+  source: "Indian currency dataset (Kaggle/Roboflow)"
+  path: datasets/currency/
+
+voice:         # stretch
+  source: "Common Voice (STT) + ASVspoof (spoof detection)"
+  path: datasets/voice/

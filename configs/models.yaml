@@ -1,0 +1,19 @@
+# models.yaml — which trained model artifact each agent currently loads
+# Updated whenever an experiment (experiments/<domain>/exp_NN_*) is promoted.
+fraud_agent:
+  model_path: models/fraud/model.pkl
+  promoted_from: null   # e.g. "exp_02_lightgbm"
+
+scam_comm_agent:
+  sms_model_path: models/scam/sms_model.pkl
+  url_model_path: models/scam/url_model.pkl
+  promoted_from: null
+
+currency_agent:
+  model_path: models/currency/model.pt
+  promoted_from: null
+
+voice_agent:
+  stt_model: whisper-small          # pretrained, via faster-whisper
+  spoof_model_path: models/voice/asvspoof_checkpoint.pt
+  promoted_from: null

@@ -1,0 +1,24 @@
+# production.yaml — FUTURE SCOPE (see MASTER_PLAN.md Phase 11 / docs/deployment.md)
+# This file is a stub so switching environments is a one-line change later.
+# Do not build against this during the hackathon build window.
+environment: production
+
+database:
+  host: ${DB_HOST}
+  port: 5432
+  name: sentinelai
+  user: ${DB_USER}
+
+neo4j:
+  enabled: true
+  uri: ${NEO4J_URI}
+  user: ${NEO4J_USER}
+
+orchestrator:
+  host: 0.0.0.0
+  port: 8000
+  timeout_seconds: 10
+
+logging:
+  level: INFO
+  dir: /var/log/sentinelai/

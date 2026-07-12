@@ -1,0 +1,131 @@
+# ======================================================
+# Python
+# ======================================================
+*.npy
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# ======================================================
+# Environment
+# ======================================================
+
+.env
+.env.*
+
+# ======================================================
+# Model Artifacts
+# Commit code, NOT trained weights
+# ======================================================
+
+models/**/*.pkl
+models/**/*.joblib
+models/**/*.pt
+models/**/*.pth
+models/**/*.onnx
+models/**/*.ckpt
+models/**/*.npy
+models/**/*_metrics.json
+
+!models/**/class_names.json
+!models/**/.gitkeep
+
+# ======================================================
+# Datasets
+# Raw datasets are not committed
+# ======================================================
+
+# Tabular datasets
+datasets/**/*.csv
+datasets/**/*.json
+datasets/**/*.xlsx
+datasets/**/*.xls
+datasets/**/*.parquet
+datasets/**/*.zip
+datasets/**/*.tar
+datasets/**/*.gz
+
+# Image datasets
+datasets/**/*.jpg
+datasets/**/*.jpeg
+datasets/**/*.png
+datasets/**/*.bmp
+datasets/**/*.tif
+datasets/**/*.tiff
+datasets/**/*.webp
+
+# Dataset folders
+datasets/**/data/
+datasets/**/Features/
+datasets/**/*_Features/
+datasets/**/images/
+
+!datasets/**/.gitkeep
+
+# ======================================================
+# Experiment Outputs
+# ======================================================
+
+experiments/**/checkpoints/
+experiments/**/runs/
+experiments/**/logs/
+experiments/**/outputs/
+
+# ======================================================
+# Metrics & Generated Reports
+# ======================================================
+
+metrics.json
+*_metrics.json
+confusion_matrix*.png
+roc_curve*.png
+pr_curve*.png
+gradcam*.png
+*.svg
+
+# ======================================================
+# Logs
+# ======================================================
+
+logs/
+*.log
+
+!logs/**/.gitkeep
+
+# ======================================================
+# Jupyter
+# ======================================================
+
+.ipynb_checkpoints/
+
+# ======================================================
+# PyTorch
+# ======================================================
+
+*.pt
+*.pth
+
+# ======================================================
+# Frontend
+# ======================================================
+
+frontend/**/node_modules/
+frontend/**/build/
+frontend/**/dist/
+
+# ======================================================
+# OS
+# ======================================================
+
+.DS_Store
+Thumbs.db
+desktop.ini

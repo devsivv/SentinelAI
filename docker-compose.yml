@@ -1,0 +1,25 @@
+# Local development only — see docs/deployment.md for what's in/out of scope.
+# Agents and the Orchestrator run via uvicorn directly during the build,
+# not containerized (see SYSTEM_RULES.md — avoid production-shaped complexity early).
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: sentinelai_dev
+      POSTGRES_USER: sentinelai
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-devpassword}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  # neo4j:   # uncomment only if Phase 7 (Graph Agent) is being attempted
+  #   image: neo4j:5
+  #   environment:
+  #     NEO4J_AUTH: neo4j/devpassword
+  #   ports:
+  #     - "7474:7474"
+  #     - "7687:7687"
+
+volumes:
+  pgdata:

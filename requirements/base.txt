@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+pydantic
+python-dotenv
+PyYAML
+httpx
+requests
+python-multipart
+networkx
+python-dateutil
+tqdm
