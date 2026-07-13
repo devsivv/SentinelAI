@@ -21,6 +21,8 @@ from typing import Any, Optional
 import joblib
 import numpy as np
 
+from core.loader import load_joblib_model
+
 from .config import settings
 from .logging import get_logger
 
@@ -58,26 +60,13 @@ def get_url_model(path: Optional[Path] = None) -> Any:
     FileNotFoundError
         If the model file does not exist at the resolved path.
     """
-    global _url_model  # noqa: PLW0603
-
-    if _url_model is not None:
-        return _url_model
-
-    with _url_lock:
-        # Double-checked locking: another thread may have loaded while waiting.
-        if _url_model is None:
-            resolved = path or settings.phishing_model_path
-            if not resolved.exists():
-                raise FileNotFoundError(
-                    f"Phishing model file not found at '{resolved}'. "
-                    "Verify the path in configs/models.yaml or set "
-                    "SCAM_COMM_PHISHING_MODEL_PATH."
-                )
-            log.info("Loading phishing URL model from '%s' …", resolved)
-            _url_model = joblib.load(str(resolved))
-            log.info("Phishing URL model loaded successfully.")
-
-    return _url_model
+    return load_joblib_model(
+        path or settings.phishing_model_path,
+        cache_dict=globals(),
+        cache_key="_url_model",
+        lock=_url_lock,
+        label="Phishing model file",
+    )
 
 
 def reset_url_model_cache() -> None:

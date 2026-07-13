@@ -21,6 +21,8 @@ from typing import Any, Optional
 import joblib
 import numpy as np
 
+from core.loader import load_joblib_model
+
 from .config import settings
 from .logging import get_logger
 
@@ -58,25 +60,13 @@ def get_fraud_model(path: Optional[Path] = None) -> Any:
     FileNotFoundError
         If the model file does not exist at the resolved path.
     """
-    global _model  # noqa: PLW0603
-
-    if _model is not None:
-        return _model
-
-    with _model_lock:
-        # Double-checked locking: another thread may have loaded while waiting.
-        if _model is None:
-            resolved = path or settings.model_path
-            if not resolved.exists():
-                raise FileNotFoundError(
-                    f"Fraud model file not found at '{resolved}'. "
-                    "Verify the path in configs/models.yaml or set FRAUD_MODEL_PATH."
-                )
-            log.info("Loading fraud detection model from '%s' …", resolved)
-            _model = joblib.load(str(resolved))
-            log.info("Fraud detection model loaded successfully.")
-
-    return _model
+    return load_joblib_model(
+        path or settings.model_path,
+        cache_dict=globals(),
+        cache_key="_model",
+        lock=_model_lock,
+        label="Fraud model file",
+    )
 
 
 def reset_model_cache() -> None:

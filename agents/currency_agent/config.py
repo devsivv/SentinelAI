@@ -11,19 +11,14 @@ from __future__ import annotations
 from pathlib import Path
 
 from pydantic import Field
-from pydantic_settings import BaseSettings
+
+from core.config import PROJECT_ROOT, AgentBaseConfig
 
 
-# ---------------------------------------------------------------------------
-# Resolve project root so relative config paths work regardless of CWD
-# ---------------------------------------------------------------------------
-
-# agents/currency_agent/ → agents/ → project root
-_AGENT_DIR = Path(__file__).resolve().parent
-_PROJECT_ROOT = _AGENT_DIR.parent.parent
 
 
-class CurrencyAgentConfig(BaseSettings):
+
+class CurrencyAgentConfig(AgentBaseConfig):
     """Runtime configuration for the Currency Agent.
 
     Values are read from environment variables (``CURRENCY_*`` prefix) so they
@@ -36,11 +31,11 @@ class CurrencyAgentConfig(BaseSettings):
     # Model artifacts
     # ------------------------------------------------------------------
     model_path: Path = Field(
-        default=_PROJECT_ROOT / "models" / "currency" / "mobilenet_v2.pt",
+        default=PROJECT_ROOT / "models" / "currency" / "mobilenet_v2.pt",
         description="Path to the exported TorchScript / state-dict file.",
     )
     class_names_path: Path = Field(
-        default=_PROJECT_ROOT / "models" / "currency" / "class_names.json",
+        default=PROJECT_ROOT / "models" / "currency" / "class_names.json",
         description="Path to the class_names.json produced during training.",
     )
 
@@ -76,19 +71,9 @@ class CurrencyAgentConfig(BaseSettings):
         ),
     )
 
-    # ------------------------------------------------------------------
-    # Logging
-    # ------------------------------------------------------------------
-    log_dir: Path = Field(
-        default=_PROJECT_ROOT / "logs" / "agents",
-        description="Directory where agent log files are written.",
-    )
-    log_level: str = Field(
-        default="INFO",
-        description="Python logging level (DEBUG, INFO, WARNING, ERROR).",
-    )
 
-    model_config = {"env_prefix": "CURRENCY_", "env_file": ".env", "extra": "ignore"}
+
+    model_config = {"env_prefix": "CURRENCY_", **AgentBaseConfig.model_config}
 
 
 # ---------------------------------------------------------------------------

@@ -11,19 +11,14 @@ from __future__ import annotations
 from pathlib import Path
 
 from pydantic import Field
-from pydantic_settings import BaseSettings
+
+from core.config import PROJECT_ROOT, AgentBaseConfig
 
 
-# ---------------------------------------------------------------------------
-# Resolve project root so relative config paths work regardless of CWD
-# ---------------------------------------------------------------------------
-
-# agents/scam_comm_agent/ → agents/ → project root
-_AGENT_DIR = Path(__file__).resolve().parent
-_PROJECT_ROOT = _AGENT_DIR.parent.parent
 
 
-class ScamCommAgentConfig(BaseSettings):
+
+class ScamCommAgentConfig(AgentBaseConfig):
     """Runtime configuration for the Scam Communication Agent.
 
     Values are read from environment variables (``SCAM_COMM_*`` prefix) so they
@@ -36,11 +31,11 @@ class ScamCommAgentConfig(BaseSettings):
     # SMS model artifacts
     # ------------------------------------------------------------------
     sms_model_path: Path = Field(
-        default=_PROJECT_ROOT / "models" / "sms" / "sms_model.pkl",
+        default=PROJECT_ROOT / "models" / "sms" / "sms_model.pkl",
         description="Path to the trained CalibratedClassifierCV(LinearSVC) model.",
     )
     tfidf_path: Path = Field(
-        default=_PROJECT_ROOT / "models" / "sms" / "tfidf_vectorizer.pkl",
+        default=PROJECT_ROOT / "models" / "sms" / "tfidf_vectorizer.pkl",
         description="Path to the fitted TF-IDF vectorizer.",
     )
 
@@ -48,7 +43,7 @@ class ScamCommAgentConfig(BaseSettings):
     # Phishing URL model artifacts
     # ------------------------------------------------------------------
     phishing_model_path: Path = Field(
-        default=_PROJECT_ROOT / "models" / "phishing" / "phishing_model.joblib",
+        default=PROJECT_ROOT / "models" / "phishing" / "phishing_model.joblib",
         description="Path to the trained XGBoost phishing model.",
     )
 
@@ -74,19 +69,9 @@ class ScamCommAgentConfig(BaseSettings):
         ),
     )
 
-    # ------------------------------------------------------------------
-    # Logging
-    # ------------------------------------------------------------------
-    log_dir: Path = Field(
-        default=_PROJECT_ROOT / "logs" / "agents",
-        description="Directory where agent log files are written.",
-    )
-    log_level: str = Field(
-        default="INFO",
-        description="Python logging level (DEBUG, INFO, WARNING, ERROR).",
-    )
 
-    model_config = {"env_prefix": "SCAM_COMM_", "env_file": ".env", "extra": "ignore"}
+
+    model_config = {"env_prefix": "SCAM_COMM_", **AgentBaseConfig.model_config}
 
 
 # ---------------------------------------------------------------------------

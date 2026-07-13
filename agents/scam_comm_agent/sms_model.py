@@ -22,6 +22,8 @@ from typing import Any, Optional
 import joblib
 import numpy as np
 
+from core.loader import load_joblib_model
+
 from .config import settings
 from .logging import get_logger
 
@@ -62,25 +64,13 @@ def get_sms_model(path: Optional[Path] = None) -> Any:
     FileNotFoundError
         If the model file does not exist at the resolved path.
     """
-    global _sms_model  # noqa: PLW0603
-
-    if _sms_model is not None:
-        return _sms_model
-
-    with _sms_lock:
-        # Double-checked locking: another thread may have loaded while waiting.
-        if _sms_model is None:
-            resolved = path or settings.sms_model_path
-            if not resolved.exists():
-                raise FileNotFoundError(
-                    f"SMS model file not found at '{resolved}'. "
-                    "Verify the path in configs/models.yaml or set SCAM_COMM_SMS_MODEL_PATH."
-                )
-            log.info("Loading SMS model from '%s' …", resolved)
-            _sms_model = joblib.load(str(resolved))
-            log.info("SMS model loaded successfully.")
-
-    return _sms_model
+    return load_joblib_model(
+        path or settings.sms_model_path,
+        cache_dict=globals(),
+        cache_key="_sms_model",
+        lock=_sms_lock,
+        label="SMS model file",
+    )
 
 
 def get_tfidf(path: Optional[Path] = None) -> Any:
@@ -102,25 +92,13 @@ def get_tfidf(path: Optional[Path] = None) -> Any:
     FileNotFoundError
         If the vectorizer file does not exist at the resolved path.
     """
-    global _tfidf  # noqa: PLW0603
-
-    if _tfidf is not None:
-        return _tfidf
-
-    with _tfidf_lock:
-        # Double-checked locking: another thread may have loaded while waiting.
-        if _tfidf is None:
-            resolved = path or settings.tfidf_path
-            if not resolved.exists():
-                raise FileNotFoundError(
-                    f"TF-IDF vectorizer not found at '{resolved}'. "
-                    "Verify the path in configs/models.yaml or set SCAM_COMM_TFIDF_PATH."
-                )
-            log.info("Loading TF-IDF vectorizer from '%s' …", resolved)
-            _tfidf = joblib.load(str(resolved))
-            log.info("TF-IDF vectorizer loaded successfully.")
-
-    return _tfidf
+    return load_joblib_model(
+        path or settings.tfidf_path,
+        cache_dict=globals(),
+        cache_key="_tfidf",
+        lock=_tfidf_lock,
+        label="TF-IDF vectorizer",
+    )
 
 
 def reset_sms_model_cache() -> None:

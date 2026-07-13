@@ -11,19 +11,14 @@ from __future__ import annotations
 from pathlib import Path
 
 from pydantic import Field
-from pydantic_settings import BaseSettings
+
+from core.config import PROJECT_ROOT, AgentBaseConfig
 
 
-# ---------------------------------------------------------------------------
-# Resolve project root so relative config paths work regardless of CWD
-# ---------------------------------------------------------------------------
-
-# agents/fraud_agent/ → agents/ → project root
-_AGENT_DIR = Path(__file__).resolve().parent
-_PROJECT_ROOT = _AGENT_DIR.parent.parent
 
 
-class FraudAgentConfig(BaseSettings):
+
+class FraudAgentConfig(AgentBaseConfig):
     """Runtime configuration for the Fraud Agent.
 
     Values are read from environment variables (``FRAUD_*`` prefix) so they
@@ -36,7 +31,7 @@ class FraudAgentConfig(BaseSettings):
     # Model artifacts
     # ------------------------------------------------------------------
     model_path: Path = Field(
-        default=_PROJECT_ROOT / "models" / "transactions" / "paysim_model.joblib",
+        default=PROJECT_ROOT / "models" / "transactions" / "paysim_model.joblib",
         description="Path to the exported XGBoost fraud detection model (joblib).",
     )
 
@@ -66,19 +61,9 @@ class FraudAgentConfig(BaseSettings):
         ),
     )
 
-    # ------------------------------------------------------------------
-    # Logging
-    # ------------------------------------------------------------------
-    log_dir: Path = Field(
-        default=_PROJECT_ROOT / "logs" / "agents",
-        description="Directory where agent log files are written.",
-    )
-    log_level: str = Field(
-        default="INFO",
-        description="Python logging level (DEBUG, INFO, WARNING, ERROR).",
-    )
 
-    model_config = {"env_prefix": "FRAUD_", "env_file": ".env", "extra": "ignore"}
+
+    model_config = {"env_prefix": "FRAUD_", **AgentBaseConfig.model_config}
 
 
 # ---------------------------------------------------------------------------
