@@ -21,10 +21,8 @@ Architecture boundary enforced by these tests
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
-import numpy as np
-import pytest
 from fastapi.testclient import TestClient
 
 from api.main import app
@@ -206,8 +204,8 @@ class TestCurrencyAgentIntegration:
 class TestScamSMSAgentIntegration:
     """Verify the Scam SMS API → SMS Agent integration."""
 
-    @patch("api.routers.scam.predict_sms")
-    @patch("api.routers.scam.build_sms_verdict")
+    @patch("agents.scam_comm_agent.service.predict_sms")
+    @patch("agents.scam_comm_agent.service.build_sms_verdict")
     def test_scam_sms_returns_agent_contract(self, mock_build, mock_predict):
         """A valid SMS payload must produce a full Agent Contract response."""
         from agents.scam_comm_agent.schemas import SMSPredictionResult
@@ -247,7 +245,11 @@ class TestScamSMSAgentIntegration:
 
     def test_sms_wrong_input_type_returns_400(self):
         """Sending input_type='url' to /scam/sms must return 400."""
-        payload = {**_SMS_PAYLOAD, "input_type": "url", "payload": {"url": "http://x.com"}}
+        payload = {
+            **_SMS_PAYLOAD,
+            "input_type": "url",
+            "payload": {"url": "http://x.com"},
+        }
         resp = client.post("/scam/sms", json=payload)
         assert resp.status_code == 400
 
@@ -261,7 +263,7 @@ class TestScamSMSAgentIntegration:
         resp = client.post("/scam/sms", json=bad)
         assert resp.status_code == 422
 
-    @patch("api.routers.scam.predict_sms")
+    @patch("agents.scam_comm_agent.service.predict_sms")
     def test_sms_value_error_maps_to_400(self, mock_predict):
         """Empty / whitespace SMS text must surface as HTTP 400."""
         mock_predict.side_effect = ValueError("SMS text must be a non-empty string.")
@@ -276,7 +278,7 @@ class TestScamSMSAgentIntegration:
         )
         assert resp.status_code == 400
 
-    @patch("api.routers.scam.predict_sms")
+    @patch("agents.scam_comm_agent.service.predict_sms")
     def test_sms_file_not_found_maps_to_404(self, mock_predict):
         """Missing model artefact must surface as HTTP 404."""
         mock_predict.side_effect = FileNotFoundError("sms_model.joblib not found")
@@ -284,7 +286,7 @@ class TestScamSMSAgentIntegration:
         resp = client.post("/scam/sms", json=_SMS_PAYLOAD)
         assert resp.status_code == 404
 
-    @patch("api.routers.scam.predict_sms")
+    @patch("agents.scam_comm_agent.service.predict_sms")
     def test_sms_runtime_error_maps_to_500(self, mock_predict):
         """Inference failure must surface as HTTP 500."""
         mock_predict.side_effect = RuntimeError("Inference pipeline crashed.")
@@ -301,8 +303,8 @@ class TestScamSMSAgentIntegration:
 class TestScamURLAgentIntegration:
     """Verify the Scam URL API → URL Agent integration."""
 
-    @patch("api.routers.scam.predict_url")
-    @patch("api.routers.scam.build_url_verdict")
+    @patch("agents.scam_comm_agent.service.predict_url")
+    @patch("agents.scam_comm_agent.service.build_url_verdict")
     def test_phishing_url_returns_agent_contract(self, mock_build, mock_predict):
         """A valid URL payload must produce a full Agent Contract response."""
         from agents.scam_comm_agent.schemas import URLPredictionResult
@@ -331,7 +333,9 @@ class TestScamURLAgentIntegration:
         assert body["verdict"] == "fraud"
         assert body["category"] == "phishing"
         assert "evidence" in body
-        assert body["evidence"]["url"] == "http://verify-account.phish.example.com/login"
+        assert (
+            body["evidence"]["url"] == "http://verify-account.phish.example.com/login"
+        )
         assert "features" in body["evidence"]
 
     def test_url_wrong_input_type_returns_400(self):
@@ -350,7 +354,7 @@ class TestScamURLAgentIntegration:
         resp = client.post("/scam/url", json=bad)
         assert resp.status_code == 422
 
-    @patch("api.routers.scam.predict_url")
+    @patch("agents.scam_comm_agent.service.predict_url")
     def test_url_value_error_maps_to_400(self, mock_predict):
         """Malformed URL must surface as HTTP 400."""
         mock_predict.side_effect = ValueError(
@@ -367,10 +371,12 @@ class TestScamURLAgentIntegration:
         )
         assert resp.status_code == 400
 
-    @patch("api.routers.scam.predict_url")
+    @patch("agents.scam_comm_agent.service.predict_url")
     def test_url_file_not_found_maps_to_404(self, mock_predict):
         """Missing model artefact must surface as HTTP 404."""
-        mock_predict.side_effect = FileNotFoundError("xgboost_phishing.joblib not found")
+        mock_predict.side_effect = FileNotFoundError(
+            "xgboost_phishing.joblib not found"
+        )
 
         resp = client.post("/scam/url", json=_URL_PAYLOAD)
         assert resp.status_code == 404
@@ -384,8 +390,8 @@ class TestScamURLAgentIntegration:
 class TestFraudAgentIntegration:
     """Verify the Fraud API → Fraud Agent integration."""
 
-    @patch("api.routers.fraud.predict_fraud")
-    @patch("api.routers.fraud.build_fraud_verdict")
+    @patch("agents.fraud_agent.service.predict_fraud")
+    @patch("agents.fraud_agent.service.build_fraud_verdict")
     def test_fraud_transaction_returns_agent_contract(self, mock_build, mock_predict):
         """A valid transaction payload must produce a full Agent Contract response."""
         from agents.fraud_agent.schemas import FraudPredictionResult
@@ -460,7 +466,7 @@ class TestFraudAgentIntegration:
         resp = client.post("/fraud/analyze", json=bad)
         assert resp.status_code == 422
 
-    @patch("api.routers.fraud.predict_fraud")
+    @patch("agents.fraud_agent.service.predict_fraud")
     def test_file_not_found_maps_to_404(self, mock_predict):
         """Missing model artefact must surface as HTTP 404."""
         mock_predict.side_effect = FileNotFoundError("xgboost_paysim.joblib not found")
@@ -469,7 +475,7 @@ class TestFraudAgentIntegration:
         assert resp.status_code == 404
         assert "not found" in resp.json()["detail"].lower()
 
-    @patch("api.routers.fraud.predict_fraud")
+    @patch("agents.fraud_agent.service.predict_fraud")
     def test_runtime_error_maps_to_500(self, mock_predict):
         """Inference RuntimeError must surface as HTTP 500."""
         mock_predict.side_effect = RuntimeError("XGBoost prediction failed.")
@@ -524,8 +530,8 @@ class TestArchitectureBoundaries:
 
     def test_fraud_agent_public_imports(self):
         """All expected public symbols must be importable from agents.fraud_agent."""
-        from agents.fraud_agent import (  # noqa: F401
-            VALID_TRANSACTION_TYPES,
+        from agents.fraud_agent import (
+            VALID_TRANSACTION_TYPES,  # noqa: F401
             FraudAnalysisRequest,
             FraudAnalysisResponse,
             FraudEvidence,
@@ -541,9 +547,9 @@ class TestArchitectureBoundaries:
 
     def test_core_public_imports(self):
         """All expected core symbols must be importable from core."""
-        from core import (  # noqa: F401
-            AgentBaseConfig,
+        from core import (
             PROJECT_ROOT,
+            AgentBaseConfig,  # noqa: F401
             SentinelAIError,
             build_agent_logger,
             load_joblib_model,
@@ -551,8 +557,9 @@ class TestArchitectureBoundaries:
 
     def test_api_main_imports(self):
         """The FastAPI app must be importable from api.main."""
-        from api.main import app  # noqa: F401
         from fastapi import FastAPI
+
+        from api.main import app  # noqa: F401
 
         assert isinstance(app, FastAPI)
 
@@ -561,7 +568,6 @@ class TestArchitectureBoundaries:
         import agents.currency_agent.logging as cu_log
         import agents.fraud_agent.logging as fr_log
         import agents.scam_comm_agent.logging as sc_log
-        from core.logging import build_agent_logger
 
         # Each agent's get_logger() must return the same logger object on
         # repeated calls (singleton guarantee).

@@ -4,6 +4,7 @@ reset_database.py — drops and re-applies backend/db/schema.sql against the
 local dev database. Destructive; local/dev use only, never point this at
 a production config.
 """
+
 import subprocess
 from pathlib import Path
 
@@ -16,8 +17,17 @@ def main():
         print("Aborted.")
         return
     subprocess.run(
-        ["psql", "-h", "localhost", "-U", "sentinelai", "-d", "sentinelai_dev",
-         "-f", str(ROOT / "backend" / "db" / "schema.sql")],
+        [
+            "psql",
+            "-h",
+            "localhost",
+            "-U",
+            "sentinelai",
+            "-d",
+            "sentinelai_dev",
+            "-f",
+            str(ROOT / "backend" / "db" / "schema.sql"),
+        ],
         check=True,
     )
     print("Schema re-applied.")

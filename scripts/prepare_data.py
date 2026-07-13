@@ -6,19 +6,26 @@ should add its own cleaning step here rather than a separate ad-hoc script.
 
 Usage: python scripts/prepare_data.py --domain fraud
 """
+
 import argparse
 
 
 def prepare_fraud():
-    raise NotImplementedError("Add transaction dataset cleaning here (Phase 1 / Phase 3 sprint).")
+    raise NotImplementedError(
+        "Add transaction dataset cleaning here (Phase 1 / Phase 3 sprint)."
+    )
 
 
 def prepare_sms():
-    raise NotImplementedError("Add SMS + hand-labeled scam dataset cleaning here (Phase 1 / Phase 4 sprint).")
+    raise NotImplementedError(
+        "Add SMS + hand-labeled scam dataset cleaning here (Phase 1 / Phase 4 sprint)."
+    )
 
 
 def prepare_phishing():
-    raise NotImplementedError("Add phishing URL dataset cleaning here (Phase 1 / Phase 4 sprint).")
+    raise NotImplementedError(
+        "Add phishing URL dataset cleaning here (Phase 1 / Phase 4 sprint)."
+    )
 
 
 DOMAINS = {

@@ -50,9 +50,13 @@ SentinelAI/
 │   │   │   ├── .gitkeep
 │   │   │   ├── schema.sql
 │   │   ├── fusion_agent/
-│   │   │   ├── .gitkeep
+│   │   │   ├── __init__.py
+│   │   │   ├── logic.py
+│   │   │   ├── schemas.py
 │   │   ├── orchestrator/
-│   │   │   ├── .gitkeep
+│   │   │   ├── __init__.py
+│   │   │   ├── schemas.py
+│   │   │   ├── service.py
 │   ├── configs/
 │   │   ├── .gitkeep
 │   │   ├── agents.yaml
@@ -152,12 +156,15 @@ SentinelAI/
 │   │   ├── run_all_agents.py
 │   │   ├── start_project.py
 │   ├── tests/
-│   │   ├── .gitkeep
 │   │   ├── conftest.py
 │   │   ├── test_api.py
 │   │   ├── test_currency.py
 │   │   ├── test_fraud.py
-│   │   ├── test_sms.py
+│   │   ├── test_fusion.py
+│   │   ├── test_integration.py
+│   │   ├── test_integration_sprint3.py
+│   │   ├── test_orchestrator.py
+│   │   ├── test_scam_comm.py
 ```
 
 ## 2. Directory Details
@@ -276,19 +283,22 @@ SentinelAI/
 | `tests/test_api.py` | API smoke tests | 1 | pytest | Test |
 | `tests/test_currency.py` | Currency agent tests | 2 | pytest | Test |
 | `tests/test_fraud.py` | Fraud agent tests | 3 | pytest | Test |
-| `tests/test_sms.py` | Scam agent tests | 4 | pytest | Test |
+| `tests/test_fusion.py` | Fusion agent tests | 3 | pytest | Test |
+| `tests/test_integration.py` | Orchestrator and agent integration tests | 2 | pytest | Test |
+| `tests/test_integration_sprint3.py` | Sprint 03 Orchestrator tests | 3 | pytest | Test |
+| `tests/test_orchestrator.py` | Orchestrator logic tests | 3 | pytest | Test |
+| `tests/test_scam_comm.py` | Scam agent tests | 2 | pytest | Test |
 
 ## 4. Audit Report
 
 ### A. Missing Folders
-- **`tests/` Missing specific folders/files**: Missing upcoming tests for MVP orchestration (`tests/test_orchestrator.py`, `tests/test_fusion.py`). Note: Stretch agents (Geo, Graph) intentionally do not require tests at this stage.
+- **None**. All MVP components and Orchestrator/Fusion tests are present.
 
 ### B. Missing Files
 - **Missing `README.md` files**: Agent-specific READMEs will be created during Sprint 02 when each agent is implemented. This is expected and not an implementation mistake.
 
 ### C. Architecture & Compliance Violations
-- **Agent specific inference endpoints**: Current agent directories only contain `.gitkeep`. They need a `model.py` and standard `POST /analyze` API route to comply with `SYSTEM_RULES.md`.
-- **Misplaced Files / Naming inconsistencies**: None detected. Data folders are correctly organized. `docker-compose.yml` is at the root which is perfectly valid as per `MASTER_PLAN.md` (Phase 11 demo notes).
+- **None detected.** Data folders are correctly organized. `docker-compose.yml` is at the root which is perfectly valid as per `MASTER_PLAN.md` (Phase 11 demo notes).
 
 ### D. Duplicate Folders
 - None found.

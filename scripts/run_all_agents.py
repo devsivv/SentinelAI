@@ -6,6 +6,7 @@ listed as active in configs/agents.yaml as background subprocesses.
 Usage: python scripts/run_all_agents.py
 Stop with Ctrl+C — all child processes are terminated on exit.
 """
+
 import signal
 import subprocess
 import sys

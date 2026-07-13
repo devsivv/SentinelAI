@@ -91,7 +91,7 @@ def test_currency_analyze_inference_failure(mock_predict):
 # ---------------------------------------------------------------------------
 
 
-@patch("api.routers.scam.predict_sms")
+@patch("agents.scam_comm_agent.service.predict_sms")
 def test_scam_sms_success(mock_predict_sms):
     from agents.scam_comm_agent.schemas import SMSPredictionResult
 
@@ -131,7 +131,7 @@ def test_scam_sms_wrong_input_type():
     assert response.status_code == 400
 
 
-@patch("api.routers.scam.predict_sms")
+@patch("agents.scam_comm_agent.service.predict_sms")
 def test_scam_sms_value_error(mock_predict_sms):
     mock_predict_sms.side_effect = ValueError("SMS text must be a non-empty string.")
 
@@ -148,7 +148,7 @@ def test_scam_sms_value_error(mock_predict_sms):
 # ---------------------------------------------------------------------------
 
 
-@patch("api.routers.scam.predict_url")
+@patch("agents.scam_comm_agent.service.predict_url")
 def test_scam_url_success(mock_predict_url):
     from agents.scam_comm_agent.schemas import URLPredictionResult
 
@@ -175,7 +175,7 @@ def test_scam_url_success(mock_predict_url):
     assert data["verdict"] == "fraud"
 
 
-@patch("api.routers.scam.predict_url")
+@patch("agents.scam_comm_agent.service.predict_url")
 def test_scam_url_file_not_found(mock_predict_url):
     mock_predict_url.side_effect = FileNotFoundError(
         "xgboost_phishing.joblib not found"
@@ -198,7 +198,7 @@ def test_scam_url_file_not_found(mock_predict_url):
 # ---------------------------------------------------------------------------
 
 
-@patch("api.routers.fraud.predict_fraud")
+@patch("agents.fraud_agent.service.predict_fraud")
 def test_fraud_analyze_success(mock_predict_fraud):
     from agents.fraud_agent.schemas import FraudPredictionResult
 

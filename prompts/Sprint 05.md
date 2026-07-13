@@ -2,7 +2,7 @@
 
 Paste `PROJECT_CONTEXT.md` here first.
 
-We are working on **Phase 8 — Geospatial Intelligence Agent (Stretch)** of SentinelAI.
+We are working on **Phase 5 — Geospatial Intelligence Agent (Stretch)** of SentinelAI.
 
 **Objective:** Crime heatmaps, district risk analysis, patrol recommendations, fraud density maps.
 

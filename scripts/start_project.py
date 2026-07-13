@@ -10,6 +10,7 @@ configs/agents.yaml.
 This is a convenience wrapper, not a process manager — it does not
 daemonize agents. For that, use run_all_agents.py.
 """
+
 import subprocess
 import sys
 import yaml
@@ -25,16 +26,20 @@ def main():
     print("[2/3] Applying schema (backend/db/schema.sql)...")
     # NOTE: fill in real connection details once configs/development.yaml
     # env vars are wired up; left as a manual step placeholder intentionally.
-    print("      -> run: psql -h localhost -U sentinelai -d sentinelai_dev -f backend/db/schema.sql")
+    print(
+        "      -> run: psql -h localhost -U sentinelai -d sentinelai_dev -f backend/db/schema.sql"
+    )
 
     print("[3/3] Active agents (from configs/agents.yaml):")
     with open(ROOT / "configs" / "agents.yaml") as f:
         cfg = yaml.safe_load(f)
     for agent in cfg.get("active_agents", []):
-        print(f"      -> uvicorn agents.{agent['name']}.main:app --reload --port "
-              f"{agent['url'].rsplit(':', 1)[-1]}")
-    print(f"      -> uvicorn backend.orchestrator.main:app --reload --port 8000")
-    print(f"      -> uvicorn backend.fusion_agent.main:app --reload --port 8010")
+        print(
+            f"      -> uvicorn agents.{agent['name']}.main:app --reload --port "
+            f"{agent['url'].rsplit(':', 1)[-1]}"
+        )
+    print("      -> uvicorn backend.orchestrator.main:app --reload --port 8000")
+    print("      -> uvicorn backend.fusion_agent.main:app --reload --port 8010")
 
 
 if __name__ == "__main__":

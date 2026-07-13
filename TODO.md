@@ -4,12 +4,8 @@ Only the active sprint should appear in this file.
 
 ---
 
-# Sprint 03 — Intelligence Fusion & Orchestration
+# Sprint 05 — Advanced Features & Optimization
 
-- [ ] Implement Fusion Agent
-- [ ] Implement Orchestrator Agent
-- [ ] Implement cross-agent communication logic
-- [ ] Implement weighted risk aggregation
-- [ ] Implement Case ID tracking & state management
-- [ ] Create Fusion & Orchestrator API endpoints
-- [ ] Add Orchestrator integration tests
+- [ ] Connect existing agents to new frontend dashboards
+- [ ] Begin working on Police Dashboard interface
+- [ ] Plan data visualizations for dashboard

@@ -40,17 +40,21 @@ See [`docs/deployment.md`](./docs/deployment.md) for the full local setup.
 - Sprint 00: Repository Foundation
 - Sprint 01: Dataset Engineering & Model Development
 - Sprint 02: AI Agent Implementation
+- Sprint 03: Intelligence Fusion & Orchestration
+- Sprint 04: Front-End Application (Citizen Portal & Police Dashboard)
 
 **Implemented Agents:**
 - Currency Agent (Counterfeit detection via MobileNetV2)
 - Scam Communication Agent (SMS text & URL phishing detection)
 - Fraud Agent (Financial transaction anomaly detection)
+- Intelligence Fusion Agent (Rule-based weighted risk aggregation)
+- Orchestrator Agent (Async parallel execution and fan-out)
 
 **Implemented API:**
-FastAPI layer providing isolated endpoints for each agent, strictly adhering to the API contract. Swagger UI available at `http://localhost:8000/docs`.
+FastAPI layer providing isolated endpoints for each agent, plus a unified `POST /investigate` orchestration endpoint. Swagger UI available at `http://localhost:8000/docs`.
 
 **Testing Status:**
-170 tests passing, including unit and integration tests with 94% repository coverage.
+180 tests passing, including unit and integration tests with 94% repository coverage.
 
 Check [`PROJECT_CONTEXT.md`](./PROJECT_CONTEXT.md) for the live "where are we right now" snapshot.
 

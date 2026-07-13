@@ -7,8 +7,7 @@ from __future__ import annotations
 from fastapi import APIRouter, File, Form, UploadFile
 
 from agents.currency_agent.predict import build_verdict, predict
-from agents.currency_agent.schemas import (CurrencyAnalysisResponse,
-                                           CurrencyEvidence)
+from agents.currency_agent.schemas import CurrencyAnalysisResponse, CurrencyEvidence
 
 router = APIRouter(prefix="/currency", tags=["Currency Agent"])
 
