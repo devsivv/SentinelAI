@@ -3,7 +3,6 @@ export const EvidenceType = {
   URL: 'url',
   TRANSACTION: 'transaction',
   IMAGE: 'image',
-  AUDIO: 'audio',
 } as const;
 
 export type EvidenceTypeString = typeof EvidenceType[keyof typeof EvidenceType];

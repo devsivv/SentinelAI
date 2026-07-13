@@ -195,7 +195,7 @@ export default function EvidenceForm({ onSubmit, isLoading, error }: EvidenceFor
                       />
                     </div>
                   )}
-                  {(item.input_type === EvidenceType.IMAGE || item.input_type === EvidenceType.AUDIO) && (
+                  {(item.input_type === EvidenceType.IMAGE) && (
                     <div className="mt-1 p-3 border rounded-md bg-gray-100 text-sm text-gray-500 italic">
                       Media uploads are not supported in this MVP.
                     </div>
