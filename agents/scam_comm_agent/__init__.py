@@ -5,21 +5,12 @@ Exposes the primary prediction functions and result schemas so callers
 (FastAPI routes, CLI scripts, tests) need only import from the package root.
 """
 
-from .schemas import (
-    ScamCommAnalysisRequest,
-    ScamCommAnalysisResponse,
-    SMSEvidence,
-    SMSPredictionResult,
-    URLEvidence,
-    URLPredictionResult,
-)
+from .schemas import (ScamCommAnalysisRequest, ScamCommAnalysisResponse,
+                      SMSEvidence, SMSPredictionResult, URLEvidence,
+                      URLPredictionResult)
 from .sms_predict import build_sms_verdict, predict_sms, preprocess_sms
-from .url_predict import (
-    build_url_verdict,
-    extract_url_features,
-    predict_url,
-    preprocess_url,
-)
+from .url_predict import (build_url_verdict, extract_url_features, predict_url,
+                          preprocess_url)
 
 __all__ = [
     # Schemas

@@ -60,7 +60,6 @@ import numpy as np
 import pytest
 from pydantic import ValidationError
 
-
 # ---------------------------------------------------------------------------
 # Fixtures — reset singleton before every test for isolation
 # ---------------------------------------------------------------------------
@@ -219,6 +218,7 @@ class TestFeatureEngineering:
 
     def _payload(self, **overrides):
         from agents.fraud_agent.schemas import TransactionPayload
+
         return TransactionPayload(**_make_payload(**overrides))
 
     def test_feature_vector_shape_is_1x18(self):

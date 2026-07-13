@@ -112,8 +112,7 @@ def predict(
         )
 
     probabilities: dict[str, float] = {
-        label: round(float(p), 6)
-        for label, p in zip(labels, prob_values)
+        label: round(float(p), 6) for label, p in zip(labels, prob_values)
     }
 
     # ------------------------------------------------------------------

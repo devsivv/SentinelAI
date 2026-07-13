@@ -28,7 +28,6 @@ import threading
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import numpy as np
 import pytest
 import torch
 from PIL import Image
@@ -38,7 +37,9 @@ from PIL import Image
 # ---------------------------------------------------------------------------
 
 
-def _make_png_bytes(width: int = 64, height: int = 64, color: tuple = (128, 64, 32)) -> bytes:
+def _make_png_bytes(
+    width: int = 64, height: int = 64, color: tuple = (128, 64, 32)
+) -> bytes:
     """Return raw bytes of a solid-colour PNG image."""
     img = Image.new("RGB", (width, height), color=color)
     buf = io.BytesIO()
@@ -54,7 +55,9 @@ def _make_class_names_json(tmp_path: Path, mapping: dict | None = None) -> Path:
     return p
 
 
-def _make_mock_model(num_classes: int = 2, fake_logits: list[float] | None = None) -> MagicMock:
+def _make_mock_model(
+    num_classes: int = 2, fake_logits: list[float] | None = None
+) -> MagicMock:
     """Return a MagicMock that behaves like a torch.nn.Module for inference."""
     if fake_logits is None:
         fake_logits = [5.0, -3.0]  # Strong preference for class 0 ("fake")
@@ -244,9 +247,9 @@ class TestPreprocess:
         # At least some values should be outside raw [0, 1] range after normalisation.
         arr = tensor.numpy()
         # A solid (128, 64, 32) image normalised should have values in roughly [-3, 3].
-        assert arr.min() < 0 or arr.max() > 1, (
-            "Tensor appears un-normalised; expected values outside [0, 1]."
-        )
+        assert (
+            arr.min() < 0 or arr.max() > 1
+        ), "Tensor appears un-normalised; expected values outside [0, 1]."
 
     def test_load_image_invalid_type_raises_type_error(self):
         from agents.currency_agent.preprocess import load_image
@@ -287,7 +290,9 @@ class TestPredict:
         result = self._run_predict(fake_model, class_names_file, valid_png_bytes)
         assert 0.0 <= result.confidence <= 1.0
 
-    def test_probabilities_sum_to_one(self, fake_model, class_names_file, valid_png_bytes):
+    def test_probabilities_sum_to_one(
+        self, fake_model, class_names_file, valid_png_bytes
+    ):
         result = self._run_predict(fake_model, class_names_file, valid_png_bytes)
         total = sum(result.probabilities.values())
         assert abs(total - 1.0) < 1e-5, f"Probabilities sum to {total}, expected ~1.0"
@@ -308,17 +313,17 @@ class TestPredict:
         assert result.predicted_class == "real"
         assert result.confidence > 0.9
 
-    def test_invalid_image_raises_value_error(
-        self, fake_model, class_names_file
-    ):
+    def test_invalid_image_raises_value_error(self, fake_model, class_names_file):
         from agents.currency_agent import model as model_module
         from agents.currency_agent.predict import predict
 
-        with (
-            patch.object(model_module, "get_model", return_value=fake_model),
-        ):
+        with (patch.object(model_module, "get_model", return_value=fake_model),):
             with pytest.raises(ValueError):
-                predict(b"not-an-image", case_id="test-err", class_names_path=class_names_file)
+                predict(
+                    b"not-an-image",
+                    case_id="test-err",
+                    class_names_path=class_names_file,
+                )
 
     def test_empty_bytes_raises_value_error(self, fake_model, class_names_file):
         from agents.currency_agent import model as model_module
@@ -343,7 +348,10 @@ class TestBuildVerdict:
         return PredictionResult(
             predicted_class=predicted_class,
             confidence=confidence,
-            probabilities={predicted_class: confidence, "other": round(1 - confidence, 6)},
+            probabilities={
+                predicted_class: confidence,
+                "other": round(1 - confidence, 6),
+            },
             image_size=(224, 224),
         )
 
@@ -378,9 +386,9 @@ class TestBuildVerdict:
         for confidence in [0.51, 0.70, 0.85, 0.99]:
             result = self._make_result("fake", confidence)
             verdict = build_verdict(result)
-            assert 0 <= verdict["risk_score"] <= 100, (
-                f"risk_score out of range for confidence={confidence}"
-            )
+            assert (
+                0 <= verdict["risk_score"] <= 100
+            ), f"risk_score out of range for confidence={confidence}"
 
     def test_explanation_is_non_empty_string(self):
         from agents.currency_agent.predict import build_verdict
@@ -404,7 +412,9 @@ class TestMissingModelFile:
         with pytest.raises(FileNotFoundError):
             get_model(missing_path)
 
-    def test_predict_propagates_file_not_found(self, tmp_path: Path, valid_png_bytes: bytes):
+    def test_predict_propagates_file_not_found(
+        self, tmp_path: Path, valid_png_bytes: bytes
+    ):
         """predict() must surface FileNotFoundError when the model is absent."""
         from agents.currency_agent.predict import predict
 

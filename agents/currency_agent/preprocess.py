@@ -114,7 +114,7 @@ def preprocess(source: ImageInput) -> tuple[torch.Tensor, tuple[int, int]]:
 
     # ImageNet normalisation: (x - mean) / std  per channel
     mean = np.array(settings.normalize_mean, dtype=np.float32)  # (3,)
-    std = np.array(settings.normalize_std, dtype=np.float32)    # (3,)
+    std = np.array(settings.normalize_std, dtype=np.float32)  # (3,)
     arr = (arr - mean) / std  # broadcast over (H, W, 3)
 
     # HWC → CHW → add batch dimension: (H, W, 3) → (3, H, W) → (1, 3, H, W)

@@ -9,10 +9,8 @@ docs/api.md.  Extra fields (probabilities, top-k) are nested inside
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any
 
 from pydantic import BaseModel, Field
-
 
 # ---------------------------------------------------------------------------
 # Request
@@ -33,8 +31,12 @@ class CurrencyPayload(BaseModel):
 class CurrencyAnalysisRequest(BaseModel):
     """Standard Agent Contract request envelope for the Currency Agent."""
 
-    case_id: str = Field(..., description="Unique case identifier (join key across logs and reports).")
-    input_type: str = Field(default="image", description="Always 'image' for this agent.")
+    case_id: str = Field(
+        ..., description="Unique case identifier (join key across logs and reports)."
+    )
+    input_type: str = Field(
+        default="image", description="Always 'image' for this agent."
+    )
     payload: CurrencyPayload
 
 
@@ -48,12 +50,15 @@ class CurrencyEvidence(BaseModel):
 
     predicted_class: str = Field(..., description="Raw model output class label.")
     probabilities: dict[str, float] = Field(
-        ..., description="Softmax probability for every class (class_name → probability)."
+        ...,
+        description="Softmax probability for every class (class_name → probability).",
     )
     image_size: tuple[int, int] = Field(
         ..., description="(width, height) of the preprocessed image fed to the model."
     )
-    model_version: str = Field(default="mobilenetv2", description="Backbone identifier.")
+    model_version: str = Field(
+        default="mobilenetv2", description="Backbone identifier."
+    )
 
 
 class CurrencyAnalysisResponse(BaseModel):
@@ -65,8 +70,12 @@ class CurrencyAnalysisResponse(BaseModel):
         ...,
         description="One of: 'safe' (genuine note), 'fraud' (counterfeit note), 'suspicious' (low-confidence).",
     )
-    confidence: float = Field(..., ge=0.0, le=1.0, description="Model confidence in [0, 1].")
-    risk_score: int = Field(..., ge=0, le=100, description="Integer risk score in [0, 100].")
+    confidence: float = Field(
+        ..., ge=0.0, le=1.0, description="Model confidence in [0, 1]."
+    )
+    risk_score: int = Field(
+        ..., ge=0, le=100, description="Integer risk score in [0, 100]."
+    )
     category: str = Field(
         ...,
         description="One of: 'counterfeit_note' or 'none'.",

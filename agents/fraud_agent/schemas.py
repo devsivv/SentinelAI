@@ -13,7 +13,6 @@ from typing import Annotated, Any
 
 from pydantic import BaseModel, Field, field_validator
 
-
 # ---------------------------------------------------------------------------
 # Valid transaction types
 # ---------------------------------------------------------------------------
@@ -35,7 +34,9 @@ class TransactionPayload(BaseModel):
     All monetary amounts are in the same currency unit as the training data.
     """
 
-    step: Annotated[int, Field(ge=1, description="Simulation step (hour of the simulation).")]
+    step: Annotated[
+        int, Field(ge=1, description="Simulation step (hour of the simulation).")
+    ]
     type: str = Field(
         ...,
         description=(
@@ -59,7 +60,9 @@ class TransactionPayload(BaseModel):
     ]
     oldbalanceDest: Annotated[
         float,
-        Field(ge=0.0, description="Destination account balance before the transaction."),
+        Field(
+            ge=0.0, description="Destination account balance before the transaction."
+        ),
     ]
     newbalanceDest: Annotated[
         float,
@@ -108,7 +111,9 @@ class FraudEvidence(BaseModel):
     """Extra fields surfaced inside ``evidence`` without breaking the contract."""
 
     transaction_type: str = Field(..., description="Original transaction type string.")
-    type_encoded: int = Field(..., description="LabelEncoded transaction type used by the model.")
+    type_encoded: int = Field(
+        ..., description="LabelEncoded transaction type used by the model."
+    )
     engineered_features: dict[str, Any] = Field(
         ..., description="Computed feature values fed to the model."
     )
@@ -118,7 +123,9 @@ class FraudEvidence(BaseModel):
     safe_probability: float = Field(
         ..., ge=0.0, le=1.0, description="Model probability of legitimate transaction."
     )
-    model_version: str = Field(default="xgboost_paysim", description="Model identifier.")
+    model_version: str = Field(
+        default="xgboost_paysim", description="Model identifier."
+    )
 
 
 class FraudAnalysisResponse(BaseModel):
@@ -130,8 +137,12 @@ class FraudAnalysisResponse(BaseModel):
         ...,
         description="One of: 'safe', 'fraud', 'suspicious'.",
     )
-    confidence: float = Field(..., ge=0.0, le=1.0, description="Model confidence in [0, 1].")
-    risk_score: int = Field(..., ge=0, le=100, description="Integer risk score in [0, 100].")
+    confidence: float = Field(
+        ..., ge=0.0, le=1.0, description="Model confidence in [0, 1]."
+    )
+    risk_score: int = Field(
+        ..., ge=0, le=100, description="Integer risk score in [0, 100]."
+    )
     category: str = Field(
         ...,
         description="One of: 'mule_transaction', 'none'.",

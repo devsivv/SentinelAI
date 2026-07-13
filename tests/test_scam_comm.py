@@ -28,7 +28,6 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # Fixtures — reset singletons before every test to ensure isolation
 # ---------------------------------------------------------------------------
@@ -120,7 +119,7 @@ class TestSMSModelLoading:
         fake_path.write_bytes(b"fake")
 
         call_count = {"n": 0}
-        original_load = sm._load_sms_model if hasattr(sm, "_load_sms_model") else None
+        call_count = {"n": 0}
 
         mock_model = _make_mock_sms_model()
 

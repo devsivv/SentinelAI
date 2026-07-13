@@ -25,7 +25,7 @@ PROJECT_ROOT = _CORE_DIR.parent
 
 class AgentBaseConfig(BaseSettings):
     """Base configuration for SentinelAI agents.
-    
+
     Subclass this in each agent to add agent-specific settings and an
     ``env_prefix`` within a new ``model_config``.
     """

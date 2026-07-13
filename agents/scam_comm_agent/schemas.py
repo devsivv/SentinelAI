@@ -17,7 +17,6 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-
 # ---------------------------------------------------------------------------
 # Request schemas
 # ---------------------------------------------------------------------------
@@ -59,17 +58,25 @@ class SMSEvidence(BaseModel):
     cleaned_text: str = Field(..., description="Preprocessed text fed to TF-IDF.")
     scam_probability: float = Field(..., description="Model probability of scam class.")
     ham_probability: float = Field(..., description="Model probability of ham class.")
-    model_version: str = Field(default="calibrated_linearsvc", description="Model identifier.")
+    model_version: str = Field(
+        default="calibrated_linearsvc", description="Model identifier."
+    )
 
 
 class URLEvidence(BaseModel):
     """Extra fields surfaced inside ``evidence`` for URL predictions."""
 
     url: str = Field(..., description="Original URL analysed.")
-    features: dict[str, Any] = Field(..., description="Extracted URL features used by the model.")
-    phishing_probability: float = Field(..., description="Model probability of phishing class.")
+    features: dict[str, Any] = Field(
+        ..., description="Extracted URL features used by the model."
+    )
+    phishing_probability: float = Field(
+        ..., description="Model probability of phishing class."
+    )
     safe_probability: float = Field(..., description="Model probability of safe class.")
-    model_version: str = Field(default="xgboost_phishing", description="Model identifier.")
+    model_version: str = Field(
+        default="xgboost_phishing", description="Model identifier."
+    )
 
 
 class ScamCommAnalysisResponse(BaseModel):
@@ -81,8 +88,12 @@ class ScamCommAnalysisResponse(BaseModel):
         ...,
         description="One of: 'safe', 'fraud', 'suspicious'.",
     )
-    confidence: float = Field(..., ge=0.0, le=1.0, description="Model confidence in [0, 1].")
-    risk_score: int = Field(..., ge=0, le=100, description="Integer risk score in [0, 100].")
+    confidence: float = Field(
+        ..., ge=0.0, le=1.0, description="Model confidence in [0, 1]."
+    )
+    risk_score: int = Field(
+        ..., ge=0, le=100, description="Integer risk score in [0, 100]."
+    )
     category: str = Field(
         ...,
         description="One of: 'digital_arrest_scam', 'phishing', 'none'.",

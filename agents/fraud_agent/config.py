@@ -15,9 +15,6 @@ from pydantic import Field
 from core.config import PROJECT_ROOT, AgentBaseConfig
 
 
-
-
-
 class FraudAgentConfig(AgentBaseConfig):
     """Runtime configuration for the Fraud Agent.
 
@@ -60,8 +57,6 @@ class FraudAgentConfig(AgentBaseConfig):
             "Predictions below this threshold are labelled 'suspicious'."
         ),
     )
-
-
 
     model_config = {"env_prefix": "FRAUD_", **AgentBaseConfig.model_config}
 

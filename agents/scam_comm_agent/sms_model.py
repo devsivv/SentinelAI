@@ -19,7 +19,6 @@ import threading
 from pathlib import Path
 from typing import Any, Optional
 
-import joblib
 import numpy as np
 
 from core.loader import load_joblib_model

@@ -2,6 +2,7 @@
 Shared pytest fixtures. Keep this file thin — the goal (per SYSTEM_RULES.md §6)
 is demo-breakage detection, not exhaustive coverage.
 """
+
 import pytest
 
 
@@ -15,7 +16,9 @@ def sample_sms_payload():
     return {
         "case_id": "c-test-0001",
         "input_type": "sms",
-        "payload": {"text": "Your account will be blocked. Update KYC immediately: http://bit.ly/fake-kyc"},
+        "payload": {
+            "text": "Your account will be blocked. Update KYC immediately: http://bit.ly/fake-kyc"
+        },
     }
 
 

@@ -258,16 +258,12 @@ def build_sms_verdict(result: SMSPredictionResult, case_id: str = "unknown") -> 
         verdict = "fraud"
         category = "digital_arrest_scam"
         risk_score = _confidence_to_risk(confidence)
-        explanation = (
-            f"SMS classified as scam with {confidence:.1%} confidence."
-        )
+        explanation = f"SMS classified as scam with {confidence:.1%} confidence."
     else:
         verdict = "safe"
         category = "none"
         risk_score = 100 - _confidence_to_risk(confidence)
-        explanation = (
-            f"SMS classified as legitimate with {confidence:.1%} confidence."
-        )
+        explanation = f"SMS classified as legitimate with {confidence:.1%} confidence."
 
     log.info(
         "[case_id=%s] SMS verdict='%s', risk_score=%d, category='%s'.",

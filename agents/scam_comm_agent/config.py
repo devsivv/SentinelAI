@@ -15,9 +15,6 @@ from pydantic import Field
 from core.config import PROJECT_ROOT, AgentBaseConfig
 
 
-
-
-
 class ScamCommAgentConfig(AgentBaseConfig):
     """Runtime configuration for the Scam Communication Agent.
 
@@ -68,8 +65,6 @@ class ScamCommAgentConfig(AgentBaseConfig):
             "Predictions below this threshold are labelled 'suspicious'."
         ),
     )
-
-
 
     model_config = {"env_prefix": "SCAM_COMM_", **AgentBaseConfig.model_config}
 

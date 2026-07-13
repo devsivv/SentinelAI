@@ -17,13 +17,8 @@ schemas     Pydantic request / response models (Agent Contract).
 
 from .config import settings
 from .predict import build_verdict, predict
-from .schemas import (
-    CurrencyAnalysisRequest,
-    CurrencyAnalysisResponse,
-    CurrencyEvidence,
-    CurrencyPayload,
-    PredictionResult,
-)
+from .schemas import (CurrencyAnalysisRequest, CurrencyAnalysisResponse,
+                      CurrencyEvidence, CurrencyPayload, PredictionResult)
 
 __all__ = [
     "settings",

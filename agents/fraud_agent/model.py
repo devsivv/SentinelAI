@@ -18,7 +18,6 @@ import threading
 from pathlib import Path
 from typing import Any, Optional
 
-import joblib
 import numpy as np
 
 from core.loader import load_joblib_model
@@ -119,5 +118,7 @@ def run_fraud_inference(
         log.exception("Fraud inference failed: %s", exc)
         raise RuntimeError(f"Fraud model inference failed: {exc}") from exc
 
-    log.debug("Fraud inference complete — probabilities shape: %s.", probabilities.shape)
+    log.debug(
+        "Fraud inference complete — probabilities shape: %s.", probabilities.shape
+    )
     return probabilities

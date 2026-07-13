@@ -15,9 +15,6 @@ from pydantic import Field
 from core.config import PROJECT_ROOT, AgentBaseConfig
 
 
-
-
-
 class CurrencyAgentConfig(AgentBaseConfig):
     """Runtime configuration for the Currency Agent.
 
@@ -70,8 +67,6 @@ class CurrencyAgentConfig(AgentBaseConfig):
             "Predictions below this threshold are labelled 'suspicious'."
         ),
     )
-
-
 
     model_config = {"env_prefix": "CURRENCY_", **AgentBaseConfig.model_config}
 

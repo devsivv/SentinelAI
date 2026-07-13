@@ -37,10 +37,26 @@ log = get_logger()
 
 # From phising.ipynb cell defining SUSPICIOUS_KEYWORDS
 _SUSPICIOUS_KEYWORDS: list[str] = [
-    "login", "verify", "update", "secure", "account",
-    "bank", "confirm", "signin", "password", "paypal",
-    "webscr", "ebayisapi", "wp", "admin", "auth",
-    "token", "wallet", "invoice", "billing", "support",
+    "login",
+    "verify",
+    "update",
+    "secure",
+    "account",
+    "bank",
+    "confirm",
+    "signin",
+    "password",
+    "paypal",
+    "webscr",
+    "ebayisapi",
+    "wp",
+    "admin",
+    "auth",
+    "token",
+    "wallet",
+    "invoice",
+    "billing",
+    "support",
 ]
 
 # Ordered feature names — must match the column order used during training
@@ -295,16 +311,12 @@ def build_url_verdict(result: URLPredictionResult, case_id: str = "unknown") -> 
         verdict = "fraud"
         category = "phishing"
         risk_score = _confidence_to_risk(confidence)
-        explanation = (
-            f"URL classified as phishing with {confidence:.1%} confidence."
-        )
+        explanation = f"URL classified as phishing with {confidence:.1%} confidence."
     else:
         verdict = "safe"
         category = "none"
         risk_score = 100 - _confidence_to_risk(confidence)
-        explanation = (
-            f"URL classified as safe with {confidence:.1%} confidence."
-        )
+        explanation = f"URL classified as safe with {confidence:.1%} confidence."
 
     log.info(
         "[case_id=%s] URL verdict='%s', risk_score=%d, category='%s'.",
