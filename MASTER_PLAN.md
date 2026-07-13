@@ -6,6 +6,15 @@ Non-negotiable engineering rules live in `SYSTEM_RULES.md`; how to brief an AI c
 
 ---
 
+## Current Progress
+
+- **Sprint 00 (Project Planning):** COMPLETED
+- **Sprint 01 (Dataset Engineering):** COMPLETED
+- **Sprint 02 (AI Agent Implementation):** COMPLETED
+- **Sprint 03 (Intelligence Fusion & Orchestration):** NEXT
+
+---
+
 ## 1. Scope: MVP / Stretch / Future
 
 12 phases, each with its own dataset/training implication, is a multi-month product, not a hackathon build. Pick a track per phase and commit to it. A judge remembers one thing done well more than eight things done shallowly.

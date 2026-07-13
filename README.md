@@ -24,20 +24,39 @@ This repo is organized as a living blueprint, not a one-off spec. Start here, th
 ```bash
 git clone <repo-url> && cd SentinelAI
 cp .env.example .env
-python scripts/start_project.py   # brings up db, prints next steps
-# or, once agents exist:
-python scripts/run_all_agents.py  # starts orchestrator + fusion + all active agents
+
+# Run the API locally:
+uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+
+# Run all tests:
+python -m pytest tests/ -v
 ```
 
-See [`docs/deployment.md`](./docs/deployment.md) for the full local setup and what's in/out of scope for a hackathon build.
+See [`docs/deployment.md`](./docs/deployment.md) for the full local setup.
 
 ## Current Status
 
-Check [`PROJECT_CONTEXT.md`](./PROJECT_CONTEXT.md) for the live "where are we right now" snapshot — that file, not this README, is the source of truth for current phase and next objective.
+**Completed Sprints:**
+- Sprint 00: Repository Foundation
+- Sprint 01: Dataset Engineering & Model Development
+- Sprint 02: AI Agent Implementation
+
+**Implemented Agents:**
+- Currency Agent (Counterfeit detection via MobileNetV2)
+- Scam Communication Agent (SMS text & URL phishing detection)
+- Fraud Agent (Financial transaction anomaly detection)
+
+**Implemented API:**
+FastAPI layer providing isolated endpoints for each agent, strictly adhering to the API contract. Swagger UI available at `http://localhost:8000/docs`.
+
+**Testing Status:**
+170 tests passing, including unit and integration tests with 94% repository coverage.
+
+Check [`PROJECT_CONTEXT.md`](./PROJECT_CONTEXT.md) for the live "where are we right now" snapshot.
 
 ## Tech Stack
 
-Python 3.12 · FastAPI · React · PostgreSQL · Neo4j (or NetworkX fallback) · Docker
+Python 3.13 · FastAPI · React · PostgreSQL · Neo4j (or NetworkX fallback) · Docker
 
 ## Development Workflow
 

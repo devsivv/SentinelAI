@@ -4,15 +4,12 @@ Only the active sprint should appear in this file.
 
 ---
 
-# Sprint 02 — AI Agent Implementation
+# Sprint 03 — Intelligence Fusion & Orchestration
 
-- [ ] Create Currency Agent
-- [ ] Create Fraud Agent
-- [ ] Create Scam Communication Agent
-- [ ] Model loading
-- [ ] Inference services
-- [ ] FastAPI endpoints
-- [ ] Agent schemas
-- [ ] Logging
-- [ ] Configuration
-- [ ] Testing
+- [ ] Implement Fusion Agent
+- [ ] Implement Orchestrator Agent
+- [ ] Implement cross-agent communication logic
+- [ ] Implement weighted risk aggregation
+- [ ] Implement Case ID tracking & state management
+- [ ] Create Fusion & Orchestrator API endpoints
+- [ ] Add Orchestrator integration tests
