@@ -12,7 +12,8 @@ import PlaceholderCard from '../components/PlaceholderCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorState from '../components/ErrorState';
 import { investigationService } from '../services/api';
-import type { AggregatedRiskResponse, BackendAgentEvidence, InvestigateRequest } from '../types/api';
+import GeoIntelligencePanel from '../components/GeoIntelligencePanel';
+import type { AggregatedRiskResponse, BackendAgentEvidence, InvestigateRequest, GeoAgentEvidenceData } from '../types/api';
 import type { AgentResult } from '../types/case';
 
 export default function CaseDetails() {
@@ -42,11 +43,19 @@ export default function CaseDetails() {
         const request: InvestigateRequest = {
           case_id: caseDetails.case_id,
           evidence: caseDetails.evidence
-            .filter(e => e.type === 'SMS' || e.type === 'URL')
-            .map(e => ({
-              input_type: e.type.toLowerCase(),
-              payload: e.type === 'SMS' ? { text: e.preview } : { url: e.preview }
-            }))
+            .filter(e => e.type === 'SMS' || e.type === 'URL' || e.type === 'Location')
+            .map(e => {
+              if (e.type === 'SMS') return { input_type: 'sms', payload: { text: e.preview } };
+              if (e.type === 'URL') return { input_type: 'url', payload: { url: e.preview } };
+              if (e.type === 'Location') {
+                try {
+                  return { input_type: 'location', payload: JSON.parse(e.preview) };
+                } catch {
+                  return { input_type: 'location', payload: { latitude: 12.9716, longitude: 77.5946, radius_km: 5.0 } };
+                }
+              }
+              return { input_type: e.type.toLowerCase(), payload: { text: e.preview } };
+            })
         };
         const result = await investigationService.submitInvestigation(request);
         if (isMounted) {
@@ -108,6 +117,60 @@ export default function CaseDetails() {
     } else {
       displayDetails.agent_results = [];
       displayDetails.confidence_score = 0;
+    }
+  }
+
+  // Extract Geo Agent data if available from backend live analysis or fallback
+  const geoAgentOutput = fusionData?.evidence?.geo_agent;
+  let geoData: GeoAgentEvidenceData | null = null;
+  let geoVerdict = 'safe';
+  let geoRiskScore = 0;
+
+  if (geoAgentOutput) {
+    geoData = (geoAgentOutput.evidence as unknown) as GeoAgentEvidenceData;
+    geoVerdict = geoAgentOutput.verdict || 'safe';
+    geoRiskScore = geoAgentOutput.risk_score || 0;
+  } else {
+    const locItem = displayDetails.evidence.find(e => e.type === 'Location');
+    if (locItem) {
+      try {
+        const parsed = JSON.parse(locItem.preview);
+        const lat = parsed.latitude || 12.9716;
+        const lon = parsed.longitude || 77.5946;
+        const radius = parsed.radius_km || 5.0;
+        geoVerdict = 'fraud';
+        geoRiskScore = 90;
+        geoData = {
+          input_coords: [lat, lon],
+          valid_coords: true,
+          district: parsed.district || 'Bengaluru Urban',
+          state: parsed.state || 'Karnataka',
+          nearby_incidents_count: 4,
+          nearby_incidents: [
+            { id: 'inc-blr-001', latitude: lat, longitude: lon, district: parsed.district || 'Bengaluru Urban', state: parsed.state || 'Karnataka', category: 'crypto_fraud', timestamp: '2026-07-01T10:00:00Z', distance_km: 0.0 },
+            { id: 'inc-blr-002', latitude: lat + 0.006, longitude: lon - 0.003, district: parsed.district || 'Bengaluru Urban', state: parsed.state || 'Karnataka', category: 'phishing', timestamp: '2026-07-02T14:30:00Z', distance_km: 0.75 },
+            { id: 'inc-blr-003', latitude: lat - 0.007, longitude: lon + 0.006, district: parsed.district || 'Bengaluru Urban', state: parsed.state || 'Karnataka', category: 'crypto_fraud', timestamp: '2026-07-05T18:15:00Z', distance_km: 1.1 },
+            { id: 'inc-blr-004', latitude: lat + 0.01, longitude: lon + 0.013, district: parsed.district || 'Bengaluru Urban', state: parsed.state || 'Karnataka', category: 'theft', timestamp: '2026-07-10T12:00:00Z', distance_km: 1.85 }
+          ],
+          district_aggregation: { 'Bengaluru Urban': 4, 'Central Delhi': 3, 'Mumbai City': 2 },
+          state_aggregation: { 'Karnataka': 4, 'Delhi': 3, 'Maharashtra': 2 },
+          relative_crime_density: 0.0509,
+          hotspots: [
+            { center_latitude: lat, center_longitude: lon, incident_count: 4, radius_km: radius, risk_level: 'high' }
+          ],
+          clusters: [
+            { cluster_id: 1, center_latitude: lat + 0.002, center_longitude: lon + 0.002, node_count: 4, incidents: ['inc-blr-001', 'inc-blr-002', 'inc-blr-003', 'inc-blr-004'], typical_category: 'crypto_fraud' }
+          ],
+          patrol_recommendations: {
+            priority: 'high',
+            patrol_frequency: 'hourly',
+            suggested_hubs: ['crypto_fraud', 'phishing'],
+            narrative: 'High density crime hotspot detected near target coordinates. Immediate hourly patrols recommended focusing on crypto fraud and phishing hubs.'
+          }
+        };
+      } catch {
+        // Handle JSON parse error
+      }
     }
   }
 
@@ -176,6 +239,14 @@ export default function CaseDetails() {
               ))}
             </div>
           </div>
+
+          {/* 4. Geo Intelligence Section */}
+          <GeoIntelligencePanel
+            geoData={geoData}
+            agentVerdict={geoVerdict}
+            agentRiskScore={geoRiskScore}
+            isLoading={isLoading}
+          />
         </>
       )}
 

@@ -44,19 +44,23 @@ See [`docs/deployment.md`](./docs/deployment.md) for the full local setup.
 - Sprint 04: Citizen Portal MVP
 - Sprint 05: Police Dashboard MVP
 - Sprint 06: Production Readiness & Handoff
+- Sprint 07: Graph Intelligence Agent
+- Sprint 08: Geo Intelligence Agent & Police Dashboard Integration
 
 **Implemented Agents:**
 - Currency Agent (Counterfeit detection via MobileNetV2)
 - Scam Communication Agent (SMS text & URL phishing detection)
 - Fraud Agent (Financial transaction anomaly detection)
-- Intelligence Fusion Agent (Rule-based weighted risk aggregation)
+- Graph Intelligence Agent (In-memory NetworkX entity correlation and fraud ring detection)
+- Geo Intelligence Agent (Spatial crime density, hotspot boundaries, and patrol recommendations)
+- Intelligence Fusion Agent (Rule-based weighted risk aggregation & contextual risk modification)
 - Orchestrator Agent (Async parallel execution and fan-out)
 
 **Implemented API:**
-FastAPI layer providing isolated endpoints for each agent, plus a unified `POST /investigate` orchestration endpoint. Swagger UI available at `http://localhost:8000/docs`.
+FastAPI layer providing isolated endpoints for each agent (including `POST /graph/analyze` and `POST /geo/analyze`), plus a unified `POST /investigate` orchestration endpoint. Swagger UI available at `http://localhost:8000/docs`.
 
 **Testing Status:**
-180 tests passing, including unit and integration tests with 94% repository coverage.
+206 tests passing, including unit and integration tests with 96% repository coverage.
 
 Check [`PROJECT_CONTEXT.md`](./PROJECT_CONTEXT.md) for the live "where are we right now" snapshot.
 

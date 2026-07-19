@@ -4,6 +4,57 @@ Newest entries appear at the top.
 
 ---
 
+## 2026-07-20 — Sprint 08: Geo Intelligence Agent & Police Dashboard Integration
+
+### Added
+
+- Created `agents/geo_agent/` module for spatial crime intelligence and patrol heuristics:
+  - `schemas.py`: Pydantic models aligning to standard AgentResult.
+  - `mapper.py`: Latitude/longitude validation, Haversine formula calculation, and 14 seeded Indian crime incident records.
+  - `analyzer.py`: Crime density calculation, district/state aggregation, hotspot detection, spatial leader-clustering, and patrol recommendations.
+  - `service.py`: Public service coordinator.
+  - `main.py`: Standalone FastAPI routers for `/geo/analyze` and standard `/analyze`.
+  - `README.md`: Math formulas, algorithm breakdowns, and API contracts.
+- Exposed gateway router at `api/routers/geo.py` and mounted in `api/main.py`.
+- Integrated Geo Agent into Orchestrator (`backend/orchestrator/service.py`) for parallel execution and Fusion Agent (`backend/fusion_agent/logic.py`) as a contextual risk modifier.
+- Created `GeoIntelligencePanel.tsx` in `frontend/police-dashboard/src/components/`:
+  - Interactive Leaflet & OpenStreetMap tile mapping.
+  - Color-coded risk markers with interactive popups.
+  - Heatmap / density overlay toggle and spatial cluster layer toggle.
+  - District overview statistics, distance-sorted nearby incidents panel, patrol recommendation card, and legend overlay.
+- Added dependencies: `leaflet`, `react-leaflet`, `@types/leaflet`.
+
+### Verified
+
+- `python -m pytest tests/` → 206 passed (100% pass rate).
+- `npm run build` (police-dashboard) → Successful production Vite build.
+- `npm run lint` (police-dashboard) → 0 warnings and 0 errors across 26 files.
+
+---
+
+## 2026-07-19 — Sprint 07: Graph Intelligence Agent
+
+### Added
+
+- Created `agents/graph_agent/` module with a complete, modular in-memory graph intelligence structure:
+  - `schemas.py`: Pydantic models conforming to standard AgentResult.
+  - `entity_extractor.py`: Identifiers normalization (phones, URLs, emails, devices, accounts, UPIs) and dynamic entity/relation parser.
+  - `graph_builder.py`: Multi-graph case builder.
+  - `analyzer.py`: Algorithms for connected components, centralities, suspicious cluster detection, and network risk estimation.
+  - `model.py`: Thread-safe, global in-memory NetworkX MultiDiGraph singleton.
+  - `service.py`: Service coordinator.
+  - `main.py`: Standalone FastAPI endpoints.
+  - `README.md`: Technical usage and architecture breakdown.
+- Exposed the `/graph/analyze` router under the unified API gateway in `api/main.py` and `api/routers/graph.py`.
+- Integrated Graph Agent into Orchestrator (`backend/orchestrator/service.py`) and Fusion Agent (`backend/fusion_agent/logic.py`).
+- Added robust integration and unit test coverage in `tests/test_graph.py` and `tests/test_integration_sprint3.py` (concurrency, dynamic extraction, empty graph cases, and partial failure).
+
+### Verified
+
+- `python -m pytest tests/` → 186 passed (100% success rate).
+
+---
+
 ## 2026-07-14 — Sprint 06: Production Readiness & Handoff
 
 ### Improved

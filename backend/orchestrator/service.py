@@ -38,6 +38,7 @@ async def process_case(request: InvestigateRequest) -> AggregatedRiskResponse:
     log.info("[case_id=%s] Orchestrator started investigation.", request.case_id)
 
     tasks = []
+    has_explicit_graph = False
 
     # Map evidence items to appropriate agent public service methods
     for item in request.evidence:
@@ -47,12 +48,24 @@ async def process_case(request: InvestigateRequest) -> AggregatedRiskResponse:
             tasks.append(_process_url(request.case_id, item.payload))
         elif item.input_type == "transaction":
             tasks.append(_process_transaction(request.case_id, item.payload))
+        elif item.input_type in ("image", "currency"):
+            tasks.append(_process_currency(request.case_id, item.payload))
+        elif item.input_type == "graph_data":
+            tasks.append(_process_graph(request.case_id, item.payload))
+            has_explicit_graph = True
+        elif item.input_type == "location":
+            tasks.append(_process_geo(request.case_id, item.payload))
         else:
             log.warning(
                 "[case_id=%s] Unknown input_type '%s', skipping.",
                 request.case_id,
                 item.input_type,
             )
+
+    # Automatically trigger Graph Agent on raw evidence if not explicitly passed
+    if not has_explicit_graph and request.evidence:
+        raw_list = [item.model_dump(mode="json") for item in request.evidence]
+        tasks.append(_process_graph(request.case_id, {"raw_evidence": raw_list}))
 
     # Fan out concurrently
     results = await asyncio.gather(*tasks)
@@ -157,4 +170,93 @@ async def _process_transaction(
         )
     except Exception as exc:
         log.error("[case_id=%s] Fraud Agent error: %s", case_id, exc)
+        return None
+
+
+async def _process_currency(case_id: str, payload: dict[str, Any]) -> AgentResult | None:
+    try:
+        import base64
+        from agents.currency_agent.predict import predict, build_verdict
+        from agents.currency_agent.schemas import CurrencyEvidence
+        
+        # Resolve raw image bytes (may be base64-encoded or raw string in mock cases)
+        image_data = payload.get("image_bytes", b"")
+        if isinstance(image_data, str):
+            try:
+                raw_bytes = base64.b64decode(image_data)
+            except Exception:
+                raw_bytes = image_data.encode("utf-8")
+        else:
+            raw_bytes = image_data
+
+        result = predict(raw_bytes, case_id=case_id)
+        verdict_dict = build_verdict(result, case_id=case_id)
+
+        evidence = CurrencyEvidence(
+            predicted_class=result.predicted_class,
+            probabilities=result.probabilities,
+            image_size=result.image_size,
+        )
+
+        return AgentResult(
+            agent=AgentType.CURRENCY,
+            case_id=case_id,
+            verdict=verdict_dict["verdict"],
+            confidence=verdict_dict["confidence"],
+            risk_score=verdict_dict["risk_score"],
+            category=verdict_dict["category"],
+            evidence=evidence,
+        )
+    except Exception as exc:
+        log.error("[case_id=%s] Currency Agent error: %s", case_id, exc)
+        return None
+
+
+async def _process_graph(case_id: str, payload: dict[str, Any]) -> AgentResult | None:
+    try:
+        from agents.graph_agent.schemas import GraphAnalysisRequest, GraphPayload
+        from agents.graph_agent.service import analyze_graph
+
+        graph_payload = GraphPayload(**payload)
+        req = GraphAnalysisRequest(
+            case_id=case_id, input_type="graph_data", payload=graph_payload
+        )
+        res = await analyze_graph(req)
+
+        return AgentResult(
+            agent=AgentType.GRAPH,
+            case_id=res.case_id,
+            verdict=res.verdict,
+            confidence=res.confidence,
+            risk_score=res.risk_score,
+            category=res.category,
+            evidence=res.evidence,
+        )
+    except Exception as exc:
+        log.error("[case_id=%s] Graph Agent error: %s", case_id, exc)
+        return None
+
+
+async def _process_geo(case_id: str, payload: dict[str, Any]) -> AgentResult | None:
+    try:
+        from agents.geo_agent.schemas import GeoAnalysisRequest, GeoPayload
+        from agents.geo_agent.service import analyze_location
+
+        geo_payload = GeoPayload(**payload)
+        req = GeoAnalysisRequest(
+            case_id=case_id, input_type="location", payload=geo_payload
+        )
+        res = await analyze_location(req)
+
+        return AgentResult(
+            agent=AgentType.GEO,
+            case_id=res.case_id,
+            verdict=res.verdict,
+            confidence=res.confidence,
+            risk_score=res.risk_score,
+            category=res.category,
+            evidence=res.evidence,
+        )
+    except Exception as exc:
+        log.error("[case_id=%s] Geo Agent error: %s", case_id, exc)
         return None

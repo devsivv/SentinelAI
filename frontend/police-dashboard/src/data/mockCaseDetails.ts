@@ -40,7 +40,8 @@ export const mockCaseDetails: Record<string, CaseDetailsData> = {
     evidence: [
       { id: 'EV-1001', type: 'SMS', preview: '"Honey I need you to click this link to verify the transfer..."', status: 'Analyzed' },
       { id: 'EV-1002', type: 'URL', preview: 'http://crypto-secure-auth-update.net/login', status: 'Flagged' },
-      { id: 'EV-1003', type: 'Transaction', preview: 'Outgoing transfer: 2.5 BTC to 1A1zP1...', status: 'Pending' }
+      { id: 'EV-1003', type: 'Transaction', preview: 'Outgoing transfer: 2.5 BTC to 1A1zP1...', status: 'Pending' },
+      { id: 'EV-1004', type: 'Location', preview: '{"latitude":12.9716,"longitude":77.5946,"radius_km":5.0,"district":"Bengaluru Urban","state":"Karnataka"}', status: 'Analyzed' }
     ],
     recommended_actions: [
       'Freeze suspicious cryptocurrency wallet addresses',

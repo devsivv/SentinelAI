@@ -16,6 +16,8 @@ class AgentType(str, Enum):
     SCAM_SMS = "scam_comm_agent_sms"
     SCAM_URL = "scam_comm_agent_url"
     CURRENCY = "currency_agent"
+    GRAPH = "graph_agent"
+    GEO = "geo_agent"
 
 
 class AgentResult(BaseModel):

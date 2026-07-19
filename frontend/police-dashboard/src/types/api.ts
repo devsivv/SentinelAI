@@ -25,6 +25,56 @@ export interface BackendAgentEvidence {
   evidence: Record<string, unknown>;
 }
 
+export interface GeoIncident {
+  id: string;
+  latitude: number;
+  longitude: number;
+  district: string;
+  state: string;
+  category: string;
+  timestamp: string;
+  distance_km?: number;
+}
+
+export interface GeoHotspot {
+  center_latitude: number;
+  center_longitude: number;
+  incident_count: number;
+  radius_km: number;
+  risk_level: string; // 'low' | 'medium' | 'high'
+}
+
+export interface GeoCluster {
+  cluster_id: number;
+  center_latitude: number;
+  center_longitude: number;
+  node_count: number;
+  incidents: string[];
+  typical_category: string;
+}
+
+export interface GeoPatrolRecommendation {
+  priority: 'low' | 'medium' | 'high' | string;
+  patrol_frequency: 'none' | 'weekly' | 'daily' | 'hourly' | string;
+  suggested_hubs: string[];
+  narrative: string;
+}
+
+export interface GeoAgentEvidenceData {
+  input_coords: [number, number];
+  valid_coords: boolean;
+  district: string;
+  state: string;
+  nearby_incidents_count: number;
+  nearby_incidents: GeoIncident[];
+  district_aggregation: Record<string, number>;
+  state_aggregation: Record<string, number>;
+  relative_crime_density: number;
+  hotspots: GeoHotspot[];
+  clusters: GeoCluster[];
+  patrol_recommendations: GeoPatrolRecommendation;
+}
+
 /**
  * Matches the backend AggregatedRiskResponse Pydantic schema exactly.
  * Source of truth: backend/fusion_agent/schemas.py

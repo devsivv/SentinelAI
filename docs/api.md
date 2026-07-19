@@ -2,29 +2,122 @@
 
 ## Agent Contract — `POST /analyze`
 
-Every agent (Fraud, Scam Comm., Currency, Voice, Graph, Geo) implements this exact shape.
+Every agent (Currency, Scam Comm SMS/URL, Fraud, Graph, Geo) implements this exact shape.
 
-**Request:**
+**Request Envelope:**
 ```json
 {
   "case_id": "c-2026-0001",
-  "input_type": "sms | url | transaction | image | audio",
+  "input_type": "sms | url | transaction | image | graph_data | location",
   "payload": { "...": "agent-specific fields" }
 }
 ```
 
-**Response:**
+**Response Envelope:**
 ```json
 {
-  "agent": "scam_sms_agent",
+  "agent": "scam_comm_agent_sms | scam_comm_agent_url | fraud_agent | currency_agent | graph_agent | geo_agent",
   "case_id": "c-2026-0001",
   "verdict": "safe | suspicious | fraud",
-  "confidence": 0.0,
-  "risk_score": 0,
-  "category": "digital_arrest_scam | phishing | counterfeit_note | mule_transaction | none",
+  "confidence": 0.95,
+  "risk_score": 90,
+  "category": "digital_arrest | phishing | mule_transaction | counterfeit_note | fraud_ring | crime_hotspot | none",
   "explanation": "short human-readable reason",
   "evidence": { "...": "raw features/snippets used" },
   "processed_at": "ISO8601 timestamp"
+}
+```
+
+## Agent Endpoints
+
+### 1. Currency Agent — `POST /currency/analyze`
+Analyzes currency images for counterfeit features.
+```json
+{
+  "case_id": "c-2026-0001",
+  "input_type": "currency",
+  "payload": {
+    "image_bytes": "base64_encoded_string=="
+  }
+}
+```
+
+### 2. Scam Communication SMS — `POST /scam/sms`
+Classifies SMS text content using Linear SVM text classifier.
+```json
+{
+  "case_id": "c-2026-0001",
+  "input_type": "sms",
+  "payload": {
+    "text": "URGENT: Your bank account is locked. Verify at http://scam-link.com"
+  }
+}
+```
+
+### 3. Scam Communication URL — `POST /scam/url`
+Evaluates domain/URL features for phishing risk using XGBoost.
+```json
+{
+  "case_id": "c-2026-0001",
+  "input_type": "url",
+  "payload": {
+    "url": "http://crypto-secure-auth-update.net/login"
+  }
+}
+```
+
+### 4. Transaction Fraud Agent — `POST /fraud/analyze`
+Evaluates financial transfer records for anomaly/mule behavior.
+```json
+{
+  "case_id": "c-2026-0001",
+  "input_type": "transaction",
+  "payload": {
+    "amount": 500000.0,
+    "oldbalanceOrg": 500000.0,
+    "newbalanceOrig": 0.0,
+    "oldbalanceDest": 0.0,
+    "newbalanceDest": 500000.0,
+    "type": "TRANSFER"
+  }
+}
+```
+
+### 5. Graph Intelligence Agent — `POST /graph/analyze`
+Analyzes structural node/edge relationships in memory using NetworkX.
+```json
+{
+  "case_id": "c-2026-0001",
+  "input_type": "graph_data",
+  "payload": {
+    "entities": [
+      { "type": "Phone Number", "id": "+919999988888" },
+      { "type": "Victim", "id": "victim-01" }
+    ],
+    "relationships": [
+      {
+        "source_type": "Victim",
+        "source_id": "victim-01",
+        "target_type": "Phone Number",
+        "target_id": "+919999988888",
+        "type": "USED"
+      }
+    ]
+  }
+}
+```
+
+### 6. Geo Intelligence Agent — `POST /geo/analyze`
+Evaluates geographical coordinates for spatial crime density, hotspot boundaries, and patrol planning.
+```json
+{
+  "case_id": "c-2026-0001",
+  "input_type": "location",
+  "payload": {
+    "latitude": 12.9716,
+    "longitude": 77.5946,
+    "radius_km": 5.0
+  }
 }
 ```
 
@@ -36,12 +129,13 @@ Every agent (Fraud, Scam Comm., Currency, Voice, Graph, Geo) implements this exa
   "case_id": "c-2026-0001",
   "evidence": [
     { "input_type": "sms", "payload": { "text": "..." } },
-    { "input_type": "transaction", "payload": { "amount": 50000, "...": "..." } }
+    { "input_type": "transaction", "payload": { "amount": 50000, "...": "..." } },
+    { "input_type": "graph_data", "payload": { "entities": [], "relationships": [] } }
   ]
 }
 ```
 
-**Behavior:** fans out to all active agents matching the submitted `input_type`s in parallel, writes each result to `agent_results`, then calls the Fusion Agent.
+**Behavior:** fans out to all active agents matching the submitted `input_type`s in parallel, writes each result to `agent_results`, then calls the Fusion Agent. If no explicit `graph_data` is supplied, raw evidence items are dynamically parsed into the Graph Agent as well.
 
 **Response:** the `fusion_reports` row for this `case_id` (see `database.md`).
 

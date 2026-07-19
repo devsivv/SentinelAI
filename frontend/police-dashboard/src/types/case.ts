@@ -21,7 +21,7 @@ export interface AgentResult {
 
 export interface EvidenceItem {
   id: string;
-  type: 'SMS' | 'URL' | 'Transaction' | 'Image';
+  type: 'SMS' | 'URL' | 'Transaction' | 'Image' | 'Location';
   preview: string;
   status: 'Analyzed' | 'Pending' | 'Flagged';
 }
