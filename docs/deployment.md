@@ -1,28 +1,85 @@
 # Deployment
 
-## Local (build this — Phase 0/9)
+## Local Development Setup
 
-`docker-compose.yml` at the repo root runs Postgres (and Neo4j, if Phase 7 is attempted) for local development. Agents and the Orchestrator run directly via `uvicorn` during the build, not containerized — containerizing each agent is extra setup time with no demo value.
+### Prerequisites
+
+- Python 3.12+
+- Node.js 20+ and npm
+- Model artifacts present under `models/` (see `scripts/download_models.py` or release assets)
+
+### 1. Clone and configure
 
 ```bash
-docker compose up -d db
-uvicorn backend.orchestrator.main:app --reload --port 8000
-uvicorn agents.fraud_agent.main:app --reload --port 8001
-uvicorn agents.scam_comm_agent.main:app --reload --port 8002
-uvicorn backend.fusion_agent.main:app --reload --port 8010
+git clone <repo-url> && cd SentinelAI
+cp .env.example .env
+# Edit .env if you need to override ports, model paths, or CORS origins
 ```
 
-Or simply: `python scripts/run_all_agents.py`, which reads `configs/agents.yaml` and starts everything active in one command.
+### 2. Install Python dependencies
+
+```bash
+pip install -r requirements/base.txt -r requirements/ml.txt -r requirements/dev.txt
+```
+
+### 3. Start the backend API
+
+All agents are unified under a single FastAPI application. Run it from the
+**repository root** (so Python can resolve package imports correctly):
+
+```bash
+uvicorn api.main:app --reload --port 8000
+```
+
+The API is now available at `http://127.0.0.1:8000`.
+Interactive docs: `http://127.0.0.1:8000/docs`
+
+### 4. Start the Citizen Portal frontend
+
+```bash
+cd frontend/citizen-portal
+npm install
+npm run dev
+# Runs on http://localhost:5173
+```
+
+### 5. Start the Police Dashboard frontend
+
+```bash
+cd frontend/police-dashboard
+npm install
+npm run dev
+# Runs on http://localhost:5174 (or the next available port)
+```
+
+### 6. Run all tests
+
+```bash
+python -m pytest tests/ -v
+```
+
+### CORS
+
+The API allows `http://localhost:5173` and `http://127.0.0.1:5173` by default.
+If your frontend runs on a different port, set `CORS_ORIGINS` in your `.env`:
+
+```env
+CORS_ORIGINS=http://localhost:5173,http://localhost:5174
+```
+
+---
 
 ## Production — `[Future scope, not built]`
 
 The following belong on a roadmap slide (`presentation.md`), not in this build:
 
-- Dockerfiles per agent + full `docker-compose.yml` (all services containerized)
+- Dockerfiles per agent + full `docker-compose.yml` (all services containerised)
 - Nginx reverse proxy / TLS termination
 - Redis + Celery for async job queues at scale
 - GitHub Actions CI/CD
 - Cloud deployment (managed Postgres/Neo4j, container orchestration)
 - Multi-tenant auth, live police dispatch integration, automated FIR filing, automated account-freeze
 
-Treat Phase 11 as the most common way hackathon teams run out of time — a local Compose file covering the DB is enough. Spend the time this would take on hardening the MVP instead (see `MASTER_PLAN.md` §Timeline, Day 5).
+Treat Phase 11 as the most common way hackathon teams run out of time — a local
+Compose file covering the DB is enough. Spend the time this would take on
+hardening the MVP instead (see `MASTER_PLAN.md` §Timeline, Day 5).

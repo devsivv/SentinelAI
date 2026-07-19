@@ -23,10 +23,12 @@ If any of these conflict with what the user is asking for in the moment, surface
 - **No hardcoding:** paths, ports, model paths, and dataset paths come from `configs/*.yaml`, never inline (`SYSTEM_RULES.md` §4).
 - **No duplicate logic:** verdict/scoring logic exists in exactly one place per agent (`SYSTEM_RULES.md` §2). Before writing a new function, check whether equivalent logic already exists elsewhere in the repo.
 
-## API Contracts
+## API Contracts & Integration
 
 - Every agent implements `POST /analyze` and returns the exact schema in `docs/api.md` — do not invent new top-level response fields; agent-specific data goes inside `evidence`.
 - When asked to build a new agent, generate the FastAPI app, the Pydantic request/response models (matching the shared contract), a `model.py` with the actual inference logic, and a smoke test in `tests/` — not just the happy-path endpoint.
+- **Frontend Integration:** Never invent backend endpoints to satisfy frontend requirements. If backend capabilities intentionally do not exist (e.g., missing CRUD APIs for cases), use graceful mock fallbacks and preserve existing API contracts.
+- **UI Architecture:** Prefer reusing existing React components, Layouts, and design systems. Do not redesign interfaces unless explicitly instructed.
 
 ## Documentation Requirements
 

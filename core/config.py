@@ -1,14 +1,16 @@
 """
 core/config.py — Shared configuration infrastructure for SentinelAI agents.
 
-This module provides the ``AgentBaseConfig`` class, which handles:
-  - Inheriting from ``pydantic_settings.BaseSettings``
-  - Discovering the ``_PROJECT_ROOT`` dynamically
-  - Setting up standard ``log_dir`` and ``log_level`` fields
-  - Configuring ``.env`` loading (via ``model_config``)
+This module provides:
 
-Agent-specific settings (model paths, thresholds, etc.) remain in each
-agent's own ``config.py``.
+``AgentBaseConfig``
+    Base ``pydantic_settings.BaseSettings`` subclass for every agent.
+    Handles log_dir, log_level, and .env loading.  Agent-specific settings
+    (model paths, thresholds, etc.) remain in each agent's own ``config.py``.
+
+``AppConfig``
+    Top-level application configuration read by the FastAPI layer (api/main.py).
+    Centralises values that were previously hardcoded (API version, CORS origins).
 """
 
 from __future__ import annotations
@@ -21,6 +23,60 @@ from pydantic_settings import BaseSettings
 # Dynamically discover the project root assuming this file is in `core/`
 _CORE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = _CORE_DIR.parent
+
+# ---------------------------------------------------------------------------
+# Application-level settings (used by the FastAPI layer, not individual agents)
+# ---------------------------------------------------------------------------
+
+API_VERSION = "0.1.0"
+
+
+class AppConfig(BaseSettings):
+    """Top-level SentinelAI application configuration.
+
+    All values can be overridden via environment variables or a ``.env`` file.
+
+    Environment variables (no prefix):
+        API_HOST          — Host the API server binds to (default: 127.0.0.1)
+        API_PORT          — Port the API server listens on (default: 8000)
+        CORS_ORIGINS      — Comma-separated list of allowed CORS origins
+                            (default: http://localhost:5173,http://127.0.0.1:5173)
+        LOG_LEVEL         — Root log level (default: INFO)
+    """
+
+    api_host: str = Field(
+        default="127.0.0.1",
+        description="Host the API server binds to.",
+    )
+    api_port: int = Field(
+        default=8000,
+        description="Port the API server listens on.",
+    )
+    cors_origins: list[str] = Field(
+        default=["http://localhost:5173", "http://127.0.0.1:5173"],
+        description=(
+            "Allowed CORS origins.  Set CORS_ORIGINS as a comma-separated string "
+            "in .env to override, e.g. CORS_ORIGINS=http://localhost:3000,https://app.example.com"
+        ),
+    )
+    log_level: str = Field(
+        default="INFO",
+        description="Root logging level (DEBUG, INFO, WARNING, ERROR).",
+    )
+
+    model_config = {
+        "env_file": ".env",
+        "extra": "ignore",
+    }
+
+
+# Module-level singleton — import ``app_config`` from here to avoid re-instantiation.
+app_config = AppConfig()
+
+
+# ---------------------------------------------------------------------------
+# Agent base configuration (shared by all AI agents)
+# ---------------------------------------------------------------------------
 
 
 class AgentBaseConfig(BaseSettings):

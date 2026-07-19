@@ -2,7 +2,10 @@
 investigate.py — FastAPI router for the Orchestrator Agent.
 """
 
+from __future__ import annotations
+
 from fastapi import APIRouter, Body
+
 
 from backend.fusion_agent.schemas import AggregatedRiskResponse
 from backend.orchestrator.schemas import InvestigateRequest

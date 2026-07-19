@@ -4,6 +4,55 @@ Newest entries appear at the top.
 
 ---
 
+## 2026-07-14 — Sprint 06: Production Readiness & Handoff
+
+### Improved
+
+- Centralized CORS origins and API version into `core/config.py` (`AppConfig`, `API_VERSION`) — removed hardcoded values from `api/main.py` and `api/routers/health.py`
+- Added `FastAPI` type annotation to `api/errors.py` `register_exception_handlers`
+- Fixed PEP 8 import ordering in `backend/orchestrator/service.py` (stdlib → third-party → local)
+- Added `from __future__ import annotations` to `api/routers/investigate.py` and `backend/orchestrator/service.py`
+- Replaced `Optional[Path]` with `Path | None` in `agents/scam_comm_agent/sms_predict.py` (Python 3.10+ union syntax)
+- Added `BackendAgentEvidence` TypeScript interface to `frontend/police-dashboard/src/types/api.ts` — eliminated `any` types in `CaseDetails.tsx` evidence mapping
+- Expanded `.env.example` to document all overridable environment variables (CORS, log levels, model paths per agent)
+- Rewrote `docs/deployment.md` — corrected stale per-agent uvicorn startup commands; added frontend dev server instructions
+
+### Verified
+
+- `python -m pytest tests/ -q` → 180 passed (100% success rate)
+- `npm run lint && npm run build` (citizen-portal) → 0 errors
+- `npm run lint && npm run build` (police-dashboard) → 0 errors
+
+---
+
+## 2026-07-13 — Sprint 05: Police Dashboard MVP
+
+
+### Added
+
+- Police Dashboard MVP foundation using React, Vite, and TailwindCSS
+- Case Management page with mock case data
+- Case Details workspace including Investigation Review and Fusion Summary
+- Agent Result Cards, Evidence Panel, and Investigation Timeline
+- Live backend integration using the existing `POST /investigate` endpoint
+- Graceful Loading and Error state components
+- Placeholders for Alerts and Profile features
+
+### Improved
+
+- Responsive design enabling flawless mobile, tablet, and desktop views
+- Card sizing, flex wrapping, and grid layouts
+- Accessibility through focus-visible rings and interactive states
+- Search, filter, and default sorting logic (newest first)
+
+### Verified
+
+- Zero backend architecture violations; no unauthorized CRUD APIs created
+- `npm run lint` reported 0 errors via oxlint
+- `npm run build` completed cleanly without TypeScript errors
+
+---
+
 ## 2026-07-13 — Sprint 04: Front-End Application (Citizen Portal & Police Dashboard)
 
 ### Added

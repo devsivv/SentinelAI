@@ -10,9 +10,11 @@ Responsibilities:
 - Returns the final response.
 """
 
-import asyncio
-from typing import Any
+from __future__ import annotations
 
+import asyncio
+import logging
+from typing import Any
 
 from agents.fraud_agent.schemas import FraudAnalysisRequest, TransactionPayload
 from agents.fraud_agent.service import analyze as analyze_fraud_service
@@ -25,11 +27,10 @@ from agents.scam_comm_agent.service import analyze_sms as analyze_sms_service
 from agents.scam_comm_agent.service import analyze_url as analyze_url_service
 from backend.fusion_agent.logic import aggregate_risk
 from backend.fusion_agent.schemas import AgentResult, AgentType, AggregatedRiskResponse
-import logging
-
 from backend.orchestrator.schemas import InvestigateRequest
 
 log = logging.getLogger("orchestrator")
+
 
 
 async def process_case(request: InvestigateRequest) -> AggregatedRiskResponse:

@@ -41,7 +41,9 @@ See [`docs/deployment.md`](./docs/deployment.md) for the full local setup.
 - Sprint 01: Dataset Engineering & Model Development
 - Sprint 02: AI Agent Implementation
 - Sprint 03: Intelligence Fusion & Orchestration
-- Sprint 04: Front-End Application (Citizen Portal & Police Dashboard)
+- Sprint 04: Citizen Portal MVP
+- Sprint 05: Police Dashboard MVP
+- Sprint 06: Production Readiness & Handoff
 
 **Implemented Agents:**
 - Currency Agent (Counterfeit detection via MobileNetV2)
@@ -57,6 +59,10 @@ FastAPI layer providing isolated endpoints for each agent, plus a unified `POST 
 180 tests passing, including unit and integration tests with 94% repository coverage.
 
 Check [`PROJECT_CONTEXT.md`](./PROJECT_CONTEXT.md) for the live "where are we right now" snapshot.
+
+## Current Limitations
+
+- **No Persistent Case Database:** The backend intentionally exposes no `GET /cases` endpoints. Consequently, Case Lists in the dashboard remain mock-driven, while Case Details rely on live inferencing against mock payloads.
 
 ## Tech Stack
 

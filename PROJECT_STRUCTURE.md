@@ -6,13 +6,11 @@ This document serves as the authoritative repository map for the SentinelAI proj
 
 ```text
 SentinelAI/
-│
 │   ├── .env.example
 │   ├── .gitignore
 │   ├── AI_GUIDELINES.md
 │   ├── CHANGELOG.md
 │   ├── docker-compose.yml
-│   ├── generate_structure.py
 │   ├── MASTER_PLAN.md
 │   ├── PROJECT_CONTEXT.md
 │   ├── README.md
@@ -20,15 +18,50 @@ SentinelAI/
 │   ├── TODO.md
 │   ├── agents/
 │   │   ├── currency_agent/
+│   │   │   ├── config.py
+│   │   │   ├── logging.py
+│   │   │   ├── model.py
+│   │   │   ├── predict.py
+│   │   │   ├── preprocess.py
+│   │   │   ├── schemas.py
+│   │   │   ├── README.md
 │   │   │   ├── .gitkeep
 │   │   ├── fraud_agent/
+│   │   │   ├── config.py
+│   │   │   ├── logging.py
+│   │   │   ├── model.py
+│   │   │   ├── predict.py
+│   │   │   ├── schemas.py
+│   │   │   ├── service.py
+│   │   │   ├── README.md
 │   │   │   ├── .gitkeep
 │   │   ├── geo_agent/
 │   │   │   ├── .gitkeep
 │   │   ├── graph_agent/
 │   │   │   ├── .gitkeep
 │   │   ├── scam_comm_agent/
+│   │   │   ├── config.py
+│   │   │   ├── logging.py
+│   │   │   ├── schemas.py
+│   │   │   ├── service.py
+│   │   │   ├── sms_model.py
+│   │   │   ├── sms_predict.py
+│   │   │   ├── url_model.py
+│   │   │   ├── url_predict.py
+│   │   │   ├── README.md
+│   │   ├── voice_agent/
 │   │   │   ├── .gitkeep
+│   ├── api/
+│   │   ├── __init__.py
+│   │   ├── errors.py
+│   │   ├── main.py
+│   │   ├── routers/
+│   │   │   ├── __init__.py
+│   │   │   ├── currency.py
+│   │   │   ├── fraud.py
+│   │   │   ├── health.py
+│   │   │   ├── investigate.py
+│   │   │   ├── scam.py
 │   ├── assets/
 │   │   ├── README.md
 │   │   ├── architecture/
@@ -64,6 +97,12 @@ SentinelAI/
 │   │   ├── development.yaml
 │   │   ├── models.yaml
 │   │   ├── production.yaml
+│   ├── core/
+│   │   ├── __init__.py
+│   │   ├── config.py
+│   │   ├── exceptions.py
+│   │   ├── loader.py
+│   │   ├── logging.py
 │   ├── datasets/
 │   │   ├── currency/
 │   │   ├── phishing/
@@ -90,7 +129,11 @@ SentinelAI/
 │   │   ├── citizen-portal/
 │   │   │   ├── .gitkeep
 │   │   ├── police-dashboard/
-│   │   │   ├── .gitkeep
+│   │   │   ├── components/
+│   │   │   ├── data/
+│   │   │   ├── pages/
+│   │   │   ├── services/
+│   │   │   ├── types/
 │   ├── logs/
 │   │   ├── README.md
 │   │   ├── agents/
@@ -172,12 +215,13 @@ SentinelAI/
 | Folder | Purpose | Owner | Sprint | Scope | Status |
 |---|---|---|---|---|---|
 | `agents/` | Contains all individual AI agents | AI | 0-8 | MVP | - |
-| `agents/currency_agent/` | Detect counterfeit Indian currency | AI | 2 | Stretch | - |
-| `agents/fraud_agent/` | Detect fraudulent financial transactions | AI | 3 | MVP | - |
-| `agents/geo_agent/` | Geospatial intelligence, crime heatmaps | AI | 8 | Stretch | - |
-| `agents/graph_agent/` | Identify fraud rings, mule accounts | AI | 7 | Stretch | - |
-| `agents/scam_comm_agent/` | Detect scam SMS + phishing URLs | AI | 4 | MVP | - |
-| `agents/voice_agent/` | Analyze voice recordings for spoofing | AI | 5 | Stretch | - |
+| `agents/currency_agent/` | Detect counterfeit Indian currency | AI | 2 | Stretch | Implemented |
+| `agents/fraud_agent/` | Detect fraudulent financial transactions | AI | 3 | MVP | Implemented |
+| `agents/geo_agent/` | Geospatial intelligence, crime heatmaps | AI | 8 | Stretch | Deferred |
+| `agents/graph_agent/` | Identify fraud rings, mule accounts | AI | 7 | Stretch | Deferred |
+| `agents/scam_comm_agent/` | Detect scam SMS + phishing URLs | AI | 4 | MVP | Implemented |
+| `agents/voice_agent/` | Analyze voice recordings for spoofing | AI | 5 | Stretch | Deferred |
+| `api/` | FastAPI API layer (main application, exceptions, router endpoints) | Backend | 2 | MVP | Implemented |
 | `assets/` | Static assets (icons, diagrams, demos) | Frontend/DevOps | 0 | MVP | - |
 | `assets/architecture/` | Architecture diagrams | Frontend/DevOps | 0 | MVP | - |
 | `assets/demo/` | Demo materials and recordings | Frontend/DevOps | 0 | MVP | - |
@@ -187,10 +231,11 @@ SentinelAI/
 | `assets/screenshots/` | App screenshots | Frontend/DevOps | 0 | MVP | - |
 | `assets/videos/` | Demo videos | Frontend/DevOps | 0 | MVP | - |
 | `backend/` | Core backend logic | Backend | 1-9 | MVP | - |
-| `backend/db/` | Database schemas and migrations | Backend | 0 | MVP | - |
-| `backend/fusion_agent/` | Central reasoning engine | Backend | 6 | MVP | - |
-| `backend/orchestrator/` | Coordinates all active agents | Backend | 1, 9 | MVP | - |
-| `configs/` | Configuration files (models, datasets) | DevOps/Backend | 0 | MVP | - |
+| `backend/db/` | Database schemas and migrations | Backend | 0 | MVP | Implemented |
+| `backend/fusion_agent/` | Central reasoning engine | Backend | 6 | MVP | Implemented |
+| `backend/orchestrator/` | Coordinates all active agents | Backend | 1, 9 | MVP | Implemented |
+| `configs/` | Configuration files (models, datasets) | DevOps/Backend | 0 | MVP | Implemented |
+| `core/` | Shared infrastructure (configuration, logging, loaders, exceptions) | DevOps/Backend | 2 | MVP | Implemented |
 | `datasets/` | Standardized datasets for training | AI | 1 | MVP/Stretch | - |
 | `datasets/currency/` | Indian currency dataset | AI | 2 | Stretch | Implemented |
 | `datasets/phishing/` | Phishing Website Dataset | AI | 4 | MVP | Implemented |
@@ -204,44 +249,42 @@ SentinelAI/
 | `experiments/scam/` | Placeholder | AI | 4 | MVP | Placeholder |
 | `experiments/voice/` | Placeholder | AI | 5 | Stretch | Placeholder |
 | `frontend/` | Web and mobile UIs | Frontend | 10 | MVP/Stretch | - |
-| `frontend/citizen-portal/` | Citizen facing app | Frontend | 10 | Stretch | - |
-| `frontend/police-dashboard/` | Dashboard for police personnel | Frontend | 10 | MVP | - |
+| `frontend/citizen-portal/` | Citizen facing app | Frontend | 10 | Stretch | Implemented |
+| `frontend/police-dashboard/` | Dashboard for police personnel | Frontend | 10 | MVP | Implemented |
 | `logs/` | Application and system logs | DevOps | 1-9 | MVP | - |
 | `logs/agents/` | Agent specific logs | DevOps | 1-9 | MVP | - |
 | `logs/api/` | API access logs | DevOps | 1-9 | MVP | - |
-| `logs/orchestrator/` | Orchestrator coordination logs | DevOps | 1-9 | MVP | - |
-| `logs/training/` | Model training logs | DevOps | 2-5 | MVP/Stretch | - |
-| `models/` | Trained model artifacts | AI | 2-5 | MVP/Stretch | - |
-| `models/currency/` | Currency models | AI | 2 | Stretch | Implemented |
-| `models/phishing/` | Phishing models | AI | 4 | MVP | Implemented |
-| `models/sms/` | SMS Scam models | AI | 4 | MVP | Implemented |
-| `models/transactions/` | Transactions (Fraud) models | AI | 3 | MVP | Implemented |
-| `prompts/` | Prompt templates for AI assistant | AI/DevOps | 0 | MVP | - |
-| `reports/` | Generated analytical reports | Backend | 10 | MVP/Stretch | - |
-| `reports/currency/` | Currency reports | Backend | 10 | Stretch | - |
-| `reports/fraud/` | Fraud reports | Backend | 10 | MVP | - |
-| `reports/fusion/` | Fusion summary reports | Backend | 10 | MVP | - |
-| `reports/scam/` | Scam communication reports | Backend | 10 | MVP | - |
-| `reports/voice/` | Voice threat reports | Backend | 10 | Stretch | - |
-| `requirements/` | Python dependency listings | Backend/AI | 0 | MVP | - |
-| `scripts/` | Utility scripts (downloads, data prep) | Backend/AI | 1 | MVP | - |
-| `tests/` | Smoke and integration tests | Backend/AI | 1-9 | MVP | - |
-
-## 3. File Details
-
-| File | Purpose | Sprint | Dependencies | Type |
-|---|---|---|---|---|
-| `.env.example` | Environment variables template | 0 | None | Configuration |
-| `.gitignore` | Git ignore rules | 0 | None | Configuration |
-| `AI_GUIDELINES.md` | Rules for AI coding assistants | 0 | None | Documentation |
-| `CHANGELOG.md` | Project changelog | 0 | None | Documentation |
-| `docker-compose.yml` | Local service orchestration | 0 | Docker | Configuration |
-| `MASTER_PLAN.md` | Overall roadmap and scope | 0 | None | Planning only |
-| `PROJECT_CONTEXT.md` | Live snapshot of project state | 0 | None | Planning only |
-| `README.md` | Main repo documentation | 0 | None | Documentation |
-| `SYSTEM_RULES.md` | Engineering rules | 0 | None | Documentation |
-| `TODO.md` | Current sprint tasks | 0 | None | Planning only |
-| `agents/*/.gitkeep` | Preserve directories | 0 | None | Stub |
+| `agents/currency_agent/config.py` | Configuration constants for currency agent | 2 | YAML, config | Configuration |
+| `agents/currency_agent/logging.py` | Logger instantiation for currency agent | 2 | Logging | Utility |
+| `agents/currency_agent/model.py` | MobileNetV2 architecture & model loading | 2 | PyTorch | Implementation |
+| `agents/currency_agent/predict.py` | Inference pipeline for counterfeit detection | 2 | PyTorch, PIL | Implementation |
+| `agents/currency_agent/preprocess.py` | Preprocessing utilities for currency images | 2 | PIL, Albumentations | Implementation |
+| `agents/currency_agent/schemas.py` | Request/response Pydantic models for currency agent | 2 | Pydantic | Schema |
+| `agents/currency_agent/README.md` | Usage guide for currency agent | 2 | None | Documentation |
+| `agents/fraud_agent/config.py` | Configuration constants for fraud agent | 3 | YAML, config | Configuration |
+| `agents/fraud_agent/logging.py` | Logger instantiation for fraud agent | 3 | Logging | Utility |
+| `agents/fraud_agent/model.py` | Model architecture & loading (XGBoost/RF) | 3 | XGBoost, joblib | Implementation |
+| `agents/fraud_agent/predict.py` | Inference pipeline for transaction anomalies | 3 | Pandas, NumPy | Implementation |
+| `agents/fraud_agent/schemas.py` | Request/response Pydantic models for fraud agent | 3 | Pydantic | Schema |
+| `agents/fraud_agent/service.py` | Business logic service layer for fraud agent | 3 | None | Implementation |
+| `agents/fraud_agent/README.md` | Usage guide for fraud agent | 3 | None | Documentation |
+| `agents/scam_comm_agent/config.py` | Configuration constants for scam communication agent | 4 | YAML, config | Configuration |
+| `agents/scam_comm_agent/logging.py` | Logger instantiation for scam agent | 4 | Logging | Utility |
+| `agents/scam_comm_agent/schemas.py` | Request/response Pydantic models for scam agent | 4 | Pydantic | Schema |
+| `agents/scam_comm_agent/service.py` | Main service layer coordinating SMS and URL predictions | 4 | None | Implementation |
+| `agents/scam_comm_agent/sms_model.py` | TF-IDF and SVM classifier setup for SMS spam | 4 | scikit-learn, joblib | Implementation |
+| `agents/scam_comm_agent/sms_predict.py` | SMS scam inference logic | 4 | pandas, sms_model | Implementation |
+| `agents/scam_comm_agent/url_model.py` | URL feature extractor and random forest setup | 4 | joblib | Implementation |
+| `agents/scam_comm_agent/url_predict.py` | URL phishing inference logic | 4 | pandas, url_model | Implementation |
+| `agents/scam_comm_agent/README.md` | Usage guide for scam communication agent | 4 | None | Documentation |
+| `api/main.py` | FastAPI application entrypoint and router wiring | 2 | FastAPI, config | Implementation |
+| `api/errors.py` | Global exception handler registration | 2 | FastAPI | Implementation |
+| `api/routers/__init__.py` | Router module init | 2 | None | Stub |
+| `api/routers/currency.py` | Router endpoint for currency analysis | 2 | FastAPI | Implementation |
+| `api/routers/fraud.py` | Router endpoint for transaction fraud analysis | 3 | FastAPI | Implementation |
+| `api/routers/health.py` | Health check router endpoint | 2 | FastAPI | Implementation |
+| `api/routers/investigate.py` | Router endpoint for Orchestrator investigatory cases | 3 | FastAPI | Implementation |
+| `api/routers/scam.py` | Router endpoint for SMS and URL verification | 4 | FastAPI | Implementation |
 | `assets/README.md` | Assets docs | 0 | None | Documentation |
 | `assets/*/.gitkeep` | Preserve directories | 0 | None | Stub |
 | `backend/db/schema.sql` | DB Schema | 0 | PostgreSQL | Implementation |
@@ -251,6 +294,11 @@ SentinelAI/
 | `configs/development.yaml` | Dev config | 0 | None | Configuration |
 | `configs/models.yaml` | Model configurations | 0 | None | Configuration |
 | `configs/production.yaml` | Prod config | 0 | None | Configuration |
+| `core/__init__.py` | Core library package initializer | 2 | None | Stub |
+| `core/config.py` | Config loading, schema definition, and CORS centralization | 2 | Pydantic, YAML | Configuration |
+| `core/exceptions.py` | Base exceptions and error mappings | 2 | None | Implementation |
+| `core/loader.py` | Centralized model loading helper | 2 | joblib, torch | Implementation |
+| `core/logging.py` | Custom logging configuration and file handler setup | 2 | Logging | Implementation |
 | `datasets/README.md` | Datasets documentation | 0 | None | Documentation |
 | `datasets/*/.gitkeep` | Preserve directories | 0 | None | Stub |
 | `docker/README.md` | Docker instructions | 0 | None | Documentation |
@@ -295,7 +343,7 @@ SentinelAI/
 - **None**. All MVP components and Orchestrator/Fusion tests are present.
 
 ### B. Missing Files
-- **Missing `README.md` files**: Agent-specific READMEs will be created during Sprint 02 when each agent is implemented. This is expected and not an implementation mistake.
+- **None**. Agent-specific READMEs and core components have all been implemented.
 
 ### C. Architecture & Compliance Violations
 - **None detected.** Data folders are correctly organized. `docker-compose.yml` is at the root which is perfectly valid as per `MASTER_PLAN.md` (Phase 11 demo notes).
@@ -304,18 +352,12 @@ SentinelAI/
 - None found.
 
 ### E. Future-scope / Deferred items
-- **Voice Agent**: Voice Agent is intentionally deferred as a Stretch feature according to MASTER_PLAN.md. Repository folders for Voice will be created only when Sprint 05 begins.
+- **Voice Agent**: Voice Agent is intentionally deferred as a Stretch feature according to MASTER_PLAN.md.
 - `configs/production.yaml` is present, which is marked as aspirational/future-scope in `SYSTEM_RULES.md`. This is acceptable as long as it remains a stub, but its usage should be restricted until Phase 11.
 
 ### F. Hardcoded paths
 - Audit incomplete on internal script logic (`scripts/*.py`), but directory structure relies heavily on relative references (e.g. `configs/`). `SYSTEM_RULES.md` warns against inline paths.
 
 ## 5. Suggested Improvements
-1. Implement Currency Agent.
-2. Implement Scam Communication Agent.
-3. Implement Fraud Agent.
-4. Build shared model loading utilities.
-5. Implement inference services.
-6. Create FastAPI endpoints.
-7. Add smoke tests.
-8. Add README.md for each implemented agent.
+1. Implement full backend CRUD APIs for cases and persistent case database.
+2. Build advanced visualization features for the police dashboard.

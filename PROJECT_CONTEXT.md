@@ -11,7 +11,7 @@ Track:
 MVP
 
 Current Phase:
-Sprint 05 — Advanced Features & Optimization (Ready to Begin)
+Sprint 06 — Production Readiness & Handoff (Completed)
 
 Completed:
 
@@ -81,6 +81,23 @@ Completed:
 - Graceful error states, loading spinners, and empty fallbacks
 - Strict TypeScript schemas aligned with Pydantic models
 
+### Police Dashboard (Sprint 05)
+- Police Dashboard MVP Foundation
+- Case Management (Search, Filters, Sorting)
+- Case Details & Investigation Review
+- Fusion Summary & Agent Result Cards
+- Evidence Panel & Timeline
+- Recommended Actions & Responsive UI
+- Live backend integration using the `POST /investigate` endpoint
+- Loading & Error state handling
+- *Limitation*: No persistent case database; lists remain mock-driven due to backend design.
+
+### Production Readiness & Handoff (Sprint 06)
+- Centralized CORS origins and API version into `core/config.py` (`AppConfig`, `API_VERSION`)
+- Fixed type annotations and PEP 8 import ordering across backend and frontend
+- Expanded `.env.example` with CORS origins, log levels, and per-agent model paths
+- Standardized local startup commands and updated deployment guide
+
 Current Status:
 
 - **Sprint 00**: Completed
@@ -88,7 +105,8 @@ Current Status:
 - **Sprint 02**: Completed
 - **Sprint 03**: Completed
 - **Sprint 04**: Completed
-- **Sprint 05**: Ready to Begin
+- **Sprint 05**: Completed
+- **Sprint 06**: Completed
 
 **Repository now contains:**
 - `datasets/` (currency, sms, phishing, transactions)
@@ -98,6 +116,7 @@ Current Status:
 - `api/` (FastAPI layer with endpoints for each agent, plus Orchestrator `/investigate`)
 - `backend/` (Orchestrator and Fusion Agent)
 - `frontend/citizen-portal/` (React application)
+- `frontend/police-dashboard/` (React application for officers)
 - `tests/` (180 tests passing, including unit and integration tests)
 
 **Testing & Coverage:**
@@ -110,16 +129,15 @@ Current Status:
 **Intelligence Fusion & Orchestration:** Completed.
 **Frontend Integration:** Completed.
 
-Overall Progress: ~85%
+Overall Progress: 100% (MVP Completed)
 
 Next Objective:
 
-Sprint 05 — Advanced Features & Optimization
+Final Project Handoff
 
 Immediate goals:
-1. Connect existing agents to new frontend dashboards.
-2. Begin working on Police Dashboard interface.
-3. Plan data visualizations for dashboard.
+1. Conduct project review and document sync
+2. Hand over repository to stakeholders
 
 Blockers:
 

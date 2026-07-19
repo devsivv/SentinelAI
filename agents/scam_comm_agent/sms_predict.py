@@ -17,7 +17,6 @@ from __future__ import annotations
 import re
 import time
 from pathlib import Path
-from typing import Optional
 
 import nltk
 from nltk.corpus import stopwords
@@ -154,8 +153,8 @@ def predict_sms(
     text: str,
     *,
     case_id: str = "unknown",
-    model_path: Optional[Path] = None,
-    tfidf_path: Optional[Path] = None,
+    model_path: Path | None = None,
+    tfidf_path: Path | None = None,
 ) -> SMSPredictionResult:
     """Run end-to-end SMS scam inference and return a structured result.
 

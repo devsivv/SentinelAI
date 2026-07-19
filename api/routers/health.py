@@ -2,12 +2,17 @@
 health.py — System health and status endpoints.
 """
 
+from __future__ import annotations
+
 from datetime import datetime, timezone
 
 from fastapi import APIRouter
 from pydantic import BaseModel
 
+from core.config import API_VERSION
+
 router = APIRouter(tags=["System"])
+
 
 
 class StatusResponse(BaseModel):
@@ -30,7 +35,7 @@ class HealthResponse(BaseModel):
 async def get_status() -> StatusResponse:
     return StatusResponse(
         service="SentinelAI",
-        version="0.1.0",
+        version=API_VERSION,
         status="operational",
     )
 

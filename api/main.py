@@ -1,28 +1,36 @@
 """
 main.py — FastAPI Application entry point for SentinelAI.
+
+Startup:
+    uvicorn api.main:app --reload --port 8000
+
+All configuration (CORS origins, API version, host/port) is read from
+``core.config.AppConfig`` so nothing is hardcoded here.  Override any value
+via environment variable or ``.env`` (see ``.env.example``).
 """
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.errors import register_exception_handlers
-from api.routers import currency, fraud, health, scam, investigate
+from api.routers import currency, fraud, health, investigate, scam
+from core.config import API_VERSION, app_config
 
 app = FastAPI(
     title="SentinelAI API",
     description="Unified API gateway for SentinelAI Agents.",
-    version="0.1.0",
+    version=API_VERSION,
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=app_config.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Register custom exception handlers (ValueError -> 400, etc.)
+# Register custom exception handlers (ValueError → 400, FileNotFoundError → 404, RuntimeError → 500)
 register_exception_handlers(app)
 
 # Include routers

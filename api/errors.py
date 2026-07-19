@@ -2,11 +2,18 @@
 errors.py — Global exception handlers for the FastAPI application.
 
 Maps domain-specific exceptions to standard HTTP error responses.
+Registered centrally via ``register_exception_handlers`` so individual
+routers stay free of error-handling boilerplate.
+
+Error → HTTP mapping:
+    ValueError          → 400 Bad Request
+    FileNotFoundError   → 404 Not Found
+    RuntimeError        → 500 Internal Server Error
 """
 
 from __future__ import annotations
 
-from fastapi import Request
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 
@@ -36,8 +43,8 @@ async def runtime_error_handler(request: Request, exc: RuntimeError) -> JSONResp
     )
 
 
-def register_exception_handlers(app) -> None:
-    """Register all custom exception handlers on the FastAPI app."""
-    app.add_exception_handler(ValueError, value_error_handler)
-    app.add_exception_handler(FileNotFoundError, file_not_found_error_handler)
-    app.add_exception_handler(RuntimeError, runtime_error_handler)
+def register_exception_handlers(app: FastAPI) -> None:
+    """Register all custom exception handlers on the FastAPI application instance."""
+    app.add_exception_handler(ValueError, value_error_handler)  # type: ignore[arg-type]
+    app.add_exception_handler(FileNotFoundError, file_not_found_error_handler)  # type: ignore[arg-type]
+    app.add_exception_handler(RuntimeError, runtime_error_handler)  # type: ignore[arg-type]

@@ -11,7 +11,10 @@ Non-negotiable engineering rules live in `SYSTEM_RULES.md`; how to brief an AI c
 - **Sprint 00 (Project Planning):** COMPLETED
 - **Sprint 01 (Dataset Engineering):** COMPLETED
 - **Sprint 02 (AI Agent Implementation):** COMPLETED
-- **Sprint 03 (Intelligence Fusion & Orchestration):** NEXT
+- **Sprint 03 (Intelligence Fusion & Orchestration):** COMPLETED
+- **Sprint 04 (Citizen Portal MVP):** COMPLETED
+- **Sprint 05 (Police Dashboard MVP):** COMPLETED
+- **Sprint 06 (Production Readiness & Handoff):** COMPLETED
 
 ---
 
