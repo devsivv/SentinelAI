@@ -6,6 +6,7 @@ import Cases from './pages/Cases';
 import CaseDetails from './pages/CaseDetails';
 import Profile from './pages/Profile';
 import PlaceholderCard from './components/PlaceholderCard';
+import NotFound from './components/NotFound';
 
 function App() {
   return (
@@ -18,7 +19,7 @@ function App() {
         <Route path="alerts" element={
           <div className="space-y-6">
             <div className="border-b border-gray-200 pb-5">
-              <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:tracking-tight">
+              <h2 className="text-xl sm:text-2xl font-bold leading-7 text-gray-900 break-words">
                 System Alerts
               </h2>
             </div>
@@ -29,6 +30,8 @@ function App() {
             />
           </div>
         } />
+        {/* Global 404 catch-all for unmatched routes within the Layout */}
+        <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
   );

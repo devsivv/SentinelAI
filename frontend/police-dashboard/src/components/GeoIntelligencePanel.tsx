@@ -131,7 +131,7 @@ export default function GeoIntelligencePanel({
   return (
     <div className="bg-white shadow-sm ring-1 ring-black ring-opacity-5 rounded-lg overflow-hidden space-y-0">
       {/* 1. Header & Controls Bar */}
-      <div className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex flex-wrap items-center justify-between gap-4">
+      <div className="px-4 sm:px-6 py-4 bg-gray-50 border-b border-gray-200 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-blue-100 text-blue-700 rounded-lg shrink-0">
             <Compass className="h-5 w-5" />
@@ -184,7 +184,7 @@ export default function GeoIntelligencePanel({
 
       <div className="grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-gray-200">
         {/* 2. Interactive Leaflet Map (2 Cols) */}
-        <div className="lg:col-span-2 relative min-h-[420px] h-[480px] bg-gray-100 flex flex-col">
+        <div className="lg:col-span-2 relative h-56 sm:h-72 md:h-[420px] bg-gray-100 flex flex-col">
           <MapContainer
             center={centerCoords}
             zoom={13}
@@ -341,7 +341,7 @@ export default function GeoIntelligencePanel({
         </div>
 
         {/* 3. Metrics & Information Side Column (1 Col) */}
-        <div className="lg:col-span-1 p-6 space-y-6 overflow-y-auto max-h-[480px]">
+        <div className="lg:col-span-1 p-4 sm:p-6 space-y-6 overflow-y-auto lg:max-h-[420px]">
           {/* District Summary Panel */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3 flex items-center gap-1.5">

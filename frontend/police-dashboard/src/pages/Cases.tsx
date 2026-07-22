@@ -1,8 +1,10 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Search, FilterX } from 'lucide-react';
 import CaseTable from '../components/CaseTable';
+import LoadingSpinner from '../components/LoadingSpinner';
+import ErrorState from '../components/ErrorState';
 import { mockCases } from '../data/mockCases';
-import { caseService } from '../services/api';
+import { caseService, classifyApiError } from '../services/api';
 import type { CaseStatus, RiskLevel, InvestigationCase } from '../types/case';
 
 export default function Cases() {
@@ -10,49 +12,77 @@ export default function Cases() {
   const [statusFilter, setStatusFilter] = useState<CaseStatus | 'All'>('All');
   const [riskFilter, setRiskFilter] = useState<RiskLevel | 'All'>('All');
   const [casesList, setCasesList] = useState<InvestigationCase[]>(mockCases);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorVariant, setErrorVariant] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchCases = useCallback(() => {
     let isMounted = true;
+    setIsLoading(true);
+    setErrorVariant(null);
+
     caseService.getCases()
       .then((dbCases: any[]) => {
-        if (!isMounted || !Array.isArray(dbCases) || dbCases.length === 0) return;
+        if (!isMounted) return;
+        if (!Array.isArray(dbCases) || dbCases.length === 0) {
+          setCasesList(mockCases);
+          return;
+        }
         const mapped: InvestigationCase[] = dbCases.map((c) => ({
           case_id: c.case_id,
           title: `${(c.investigation_type || 'Investigation').toUpperCase()} (${c.case_id.slice(0, 8)})`,
           victim_name: c.metadata?.victim_name || 'Reported Victim',
           assigned_officer: c.metadata?.assigned_officer || 'Unassigned',
           status: 'Open',
-          risk_level: (c.fusion_report?.overall_risk || 0) >= 70 ? 'Critical' : (c.fusion_report?.overall_risk || 0) >= 40 ? 'High' : 'Medium',
+          risk_level:
+            (c.fusion_report?.overall_risk || 0) >= 70
+              ? 'Critical'
+              : (c.fusion_report?.overall_risk || 0) >= 40
+              ? 'High'
+              : 'Medium',
           created_at: c.created_at || new Date().toISOString(),
           updated_at: c.updated_at || new Date().toISOString(),
         }));
-        // Merge real DB cases with mock cases, avoiding duplicates
         const dbIds = new Set(mapped.map((c) => c.case_id));
         const combined = [...mapped, ...mockCases.filter((c) => !dbIds.has(c.case_id))];
         setCasesList(combined);
       })
-      .catch(() => {
-        // Fallback to static mockCases if backend endpoint is unavailable
+      .catch((err: Error) => {
+        if (!isMounted) return;
+        // On error, keep mock data visible rather than showing blank — but surface the error banner
+        const variant = classifyApiError(err) || 'default';
+        setErrorVariant(variant);
+        setCasesList(mockCases);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
       });
+
     return () => {
       isMounted = false;
     };
   }, []);
 
+  useEffect(() => {
+    const cleanup = fetchCases();
+    return cleanup;
+  }, [fetchCases]);
+
   const filteredCases = useMemo(() => {
     const results = casesList.filter((c) => {
-      const matchesSearch = 
+      const matchesSearch =
         c.case_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         c.victim_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         c.title.toLowerCase().includes(searchQuery.toLowerCase());
-      
+
       const matchesStatus = statusFilter === 'All' || c.status === statusFilter;
       const matchesRisk = riskFilter === 'All' || c.risk_level === riskFilter;
 
       return matchesSearch && matchesStatus && matchesRisk;
     });
 
-    return results.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    return results.sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
   }, [casesList, searchQuery, statusFilter, riskFilter]);
 
   const clearFilters = () => {
@@ -61,44 +91,56 @@ export default function Cases() {
     setRiskFilter('All');
   };
 
+  const hasFilters = searchQuery || statusFilter !== 'All' || riskFilter !== 'All';
+
   return (
     <div className="space-y-6">
-      <div className="border-b border-gray-200 pb-5 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:tracking-tight">
+      {/* Page header */}
+      <div className="border-b border-gray-200 pb-5 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-xl sm:text-2xl font-bold leading-7 text-gray-900 break-words">
             Case Management
           </h2>
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-gray-500">
             Browse and filter investigations generated by the Intelligence Fusion engine.
           </p>
         </div>
-        <div className="text-sm font-medium text-gray-700 bg-gray-100 px-3 py-1.5 rounded-md self-start md:self-auto">
-          {searchQuery || statusFilter !== 'All' || riskFilter !== 'All' 
-            ? `Showing ${filteredCases.length} of ${mockCases.length} Cases`
-            : `Showing ${mockCases.length} Cases`
-          }
+        <div className="text-sm font-medium text-gray-700 bg-gray-100 px-3 py-1.5 rounded-md self-start sm:self-auto shrink-0">
+          {hasFilters
+            ? `Showing ${filteredCases.length} of ${casesList.length}`
+            : `${casesList.length} Cases`}
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-        <div className="relative flex-1 max-w-md">
+      {/* Backend connection error — non-blocking, show with fallback data */}
+      {errorVariant && !isLoading && (
+        <ErrorState
+          variant={errorVariant as any}
+          onRetry={fetchCases}
+        />
+      )}
+
+      {/* Filters row */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+        <div className="relative flex-1 min-w-0">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <Search className="h-5 w-5 text-gray-400" aria-hidden="true" />
+            <Search className="h-4 w-4 text-gray-400" aria-hidden="true" />
           </div>
           <input
             type="text"
-            className="block w-full rounded-md border-0 py-2 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 transition-shadow"
+            className="block w-full rounded-md border-0 py-2 pl-9 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 text-sm leading-6 transition-shadow"
             placeholder="Search by Case ID, Victim, or Investigation..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            aria-label="Search cases"
           />
         </div>
-        
-        <div className="flex items-center gap-3">
+
+        <div className="flex flex-wrap items-center gap-2">
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as CaseStatus | 'All')}
-            className="block rounded-md border-0 py-2 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 transition-shadow"
+            className="rounded-md border-0 py-2 pl-3 pr-8 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 text-sm leading-6 transition-shadow"
             aria-label="Filter by Status"
           >
             <option value="All">All Statuses</option>
@@ -110,7 +152,7 @@ export default function Cases() {
           <select
             value={riskFilter}
             onChange={(e) => setRiskFilter(e.target.value as RiskLevel | 'All')}
-            className="block rounded-md border-0 py-2 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 transition-shadow"
+            className="rounded-md border-0 py-2 pl-3 pr-8 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 text-sm leading-6 transition-shadow"
             aria-label="Filter by Risk Level"
           >
             <option value="All">All Risks</option>
@@ -120,20 +162,24 @@ export default function Cases() {
             <option value="Low">Low</option>
           </select>
 
-          {(searchQuery || statusFilter !== 'All' || riskFilter !== 'All') && (
+          {hasFilters && (
             <button
               onClick={clearFilters}
-              className="inline-flex items-center p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+              className="inline-flex items-center justify-center p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 min-h-[44px] min-w-[44px]"
               title="Clear filters"
-              aria-label="Clear filters"
+              aria-label="Clear all filters"
             >
-              <FilterX className="h-5 w-5" />
+              <FilterX className="h-4 w-4" aria-hidden="true" />
             </button>
           )}
         </div>
       </div>
 
-      <CaseTable cases={filteredCases} />
+      {/* Loading skeleton */}
+      {isLoading && <LoadingSpinner message="Loading cases..." />}
+
+      {/* Cases table */}
+      {!isLoading && <CaseTable cases={filteredCases} />}
     </div>
   );
 }

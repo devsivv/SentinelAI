@@ -5,7 +5,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div className="border-b border-gray-200 pb-5">
-        <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:tracking-tight">
+        <h2 className="text-xl sm:text-2xl font-bold leading-7 text-gray-900 break-words">
           Dashboard
         </h2>
       </div>
