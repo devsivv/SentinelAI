@@ -4,9 +4,10 @@ investigate.py — FastAPI router for the Orchestrator Agent.
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Body
+from fastapi import APIRouter, Body, Depends
+from sqlalchemy.orm import Session
 
-
+from backend.db.session import get_db
 from backend.fusion_agent.schemas import AggregatedRiskResponse
 from backend.orchestrator.schemas import InvestigateRequest
 from backend.orchestrator.service import process_case
@@ -57,9 +58,11 @@ async def investigate_case(
                 },
             }
         },
-    )
+    ),
+    db: Session = Depends(get_db),
 ):
     """
     HTTP POST handler for holistic case analysis.
     """
-    return await process_case(request)
+    return await process_case(request, db=db)
+

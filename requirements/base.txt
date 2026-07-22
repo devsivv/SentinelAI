@@ -1,6 +1,7 @@
 fastapi
 uvicorn[standard]
 pydantic
+pydantic-settings
 python-dotenv
 PyYAML
 httpx
@@ -9,3 +10,8 @@ python-multipart
 networkx
 python-dateutil
 tqdm
+
+# Database — Sprint 09 (Phase 1.1)
+sqlalchemy>=2.0
+alembic
+psycopg[binary]

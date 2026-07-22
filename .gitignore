@@ -1,19 +1,79 @@
 # ======================================================
 # Python
 # ======================================================
-*.npy
+
 __pycache__/
 *.py[cod]
 *$py.class
 
-# Virtual environments
+# ======================================================
+# Virtual Environments
+# ======================================================
+
 .venv/
 venv/
 env/
+ENV/
 
+# ======================================================
+# Testing & Coverage
+# ======================================================
+
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# ======================================================
+# Type Checking & Linting Caches
+# ======================================================
+
+.mypy_cache/
+.ruff_cache/
+.dmypy.json
+
+# ======================================================
 # IDE
+# ======================================================
+
 .vscode/
 .idea/
+*.code-workspace
+
+# ======================================================
+# AI-Assisted Development Artifacts
+# These are local development tools and prompts used
+# during the engineering process. Not part of the
+# application source or deliverables.
+# ======================================================
+
+# Sprint prompts, AI session logs, brainstorming notes
+prompts/
+prompt/
+
+# Cursor AI
+.cursor/
+.cursor-chat/
+
+# Windsurf
+.windsurf/
+
+# Continue.dev
+.continue/
+
+# Aider
+.aider/
+.aider.chat.history.md
+
+# Cline / Roo
+.cline/
+roo/
+
+# GitHub Copilot
+.copilot/
+
+# Antigravity / Gemini IDE workspace config
+.agents/
 
 # ======================================================
 # Environment
@@ -21,12 +81,20 @@ env/
 
 .env
 .env.*
+!.env.example
 
 # ======================================================
 # Model Artifacts
-# Commit code, NOT trained weights
+#
+# The models/ directory contains both production
+# inference models (committed) and experimental
+# trained weights (not committed).
+#
+# Rule: ignore everything, then explicitly un-ignore
+# the exact production files needed at runtime.
 # ======================================================
 
+# Ignore all weight / artifact files by default
 models/**/*.pkl
 models/**/*.joblib
 models/**/*.pt
@@ -35,16 +103,29 @@ models/**/*.onnx
 models/**/*.ckpt
 models/**/*.npy
 models/**/*_metrics.json
+models/**/*_confusion_matrix.npy
 
+# Production inference models — explicitly kept
+!models/currency/currency_model_best.pth
+!models/currency/mobilenet_v2.pt
+!models/sms/sms_model.pkl
+!models/sms/tfidf_vectorizer.pkl
+!models/phishing/phishing_model.joblib
+!models/phishing/phishing_model.pkl
+!models/transactions/paysim_model.joblib
+!models/transactions/xgb_model.pkl
+
+# Always keep metadata and placeholder files
 !models/**/class_names.json
 !models/**/.gitkeep
 
 # ======================================================
 # Datasets
-# Raw datasets are not committed
+# Raw datasets are large binary/tabular files.
+# Only notebooks and .gitkeep placeholders are committed.
 # ======================================================
 
-# Tabular datasets
+# Tabular data
 datasets/**/*.csv
 datasets/**/*.json
 datasets/**/*.xlsx
@@ -54,7 +135,7 @@ datasets/**/*.zip
 datasets/**/*.tar
 datasets/**/*.gz
 
-# Image datasets
+# Image data
 datasets/**/*.jpg
 datasets/**/*.jpeg
 datasets/**/*.png
@@ -63,7 +144,7 @@ datasets/**/*.tif
 datasets/**/*.tiff
 datasets/**/*.webp
 
-# Dataset folders
+# Dataset sub-folders
 datasets/**/data/
 datasets/**/Features/
 datasets/**/*_Features/
@@ -81,16 +162,15 @@ experiments/**/logs/
 experiments/**/outputs/
 
 # ======================================================
-# Metrics & Generated Reports
+# Metrics & Generated Report Images
 # ======================================================
 
-metrics.json
 *_metrics.json
+*_confusion_matrix.npy
 confusion_matrix*.png
 roc_curve*.png
 pr_curve*.png
 gradcam*.png
-*.svg
 
 # ======================================================
 # Logs
@@ -108,22 +188,24 @@ logs/
 .ipynb_checkpoints/
 
 # ======================================================
-# PyTorch
+# Python Build Artifacts
 # ======================================================
 
-*.pt
-*.pth
+build/
+dist/
+*.egg-info/
 
 # ======================================================
 # Frontend
 # ======================================================
 
 frontend/**/node_modules/
-frontend/**/build/
 frontend/**/dist/
+frontend/**/build/
+frontend/**/coverage/
 
 # ======================================================
-# OS
+# OS Files
 # ======================================================
 
 .DS_Store

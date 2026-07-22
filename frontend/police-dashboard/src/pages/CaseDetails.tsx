@@ -11,7 +11,7 @@ import InvestigationTimeline from '../components/InvestigationTimeline';
 import PlaceholderCard from '../components/PlaceholderCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorState from '../components/ErrorState';
-import { investigationService } from '../services/api';
+import { investigationService, caseService } from '../services/api';
 import GeoIntelligencePanel from '../components/GeoIntelligencePanel';
 import type { AggregatedRiskResponse, BackendAgentEvidence, InvestigateRequest, GeoAgentEvidenceData } from '../types/api';
 import type { AgentResult } from '../types/case';
@@ -22,11 +22,44 @@ export default function CaseDetails() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // Base details are still sourced locally (no GET /cases API exists on backend).
-  // No fallback to CAS-2026-001: unknown IDs must show the Case Not Found placeholder.
   const details = mockCaseDetails[id || ''] ?? null;
 
   useEffect(() => {
+    let isMounted = true;
+    if (!id) return;
+
+    // Attempt to load from PostgreSQL backend first
+    caseService.getCaseById(id)
+      .then((dbCase) => {
+        if (!isMounted || !dbCase || !dbCase.fusion_report) return;
+        setFusionData({
+          case_id: dbCase.case_id,
+          final_verdict: dbCase.fusion_report.final_verdict || 'safe',
+          overall_risk: dbCase.fusion_report.overall_risk || 0,
+          narrative: dbCase.fusion_report.explanation || '',
+          recommended_action: dbCase.fusion_report.recommended_action || [],
+          evidence: (dbCase.agent_results || []).reduce((acc: any, ar: any) => {
+            acc[ar.agent_name] = {
+              agent: ar.agent_name,
+              case_id: dbCase.case_id,
+              verdict: ar.verdict,
+              confidence: ar.confidence,
+              risk_score: ar.risk_score,
+              category: ar.explanation,
+              evidence: ar.raw_output,
+            };
+            return acc;
+          }, {}),
+        });
+      })
+      .catch(() => {
+        // Mock fallback if case not found in DB
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
     // Resolve details inside the effect using the stable id string.
     // Using [details] as dependency causes re-runs on every render because
     // the merged displayDetails object has a new reference each render cycle.

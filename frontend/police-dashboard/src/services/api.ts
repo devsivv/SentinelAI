@@ -24,3 +24,29 @@ export const investigationService = {
     }
   },
 };
+
+export const caseService = {
+  getCases: async () => {
+    try {
+      const response = await axiosInstance.get('/cases');
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.detail || error.message || 'Failed to fetch cases from database.');
+      }
+      throw error;
+    }
+  },
+  getCaseById: async (id: string) => {
+    try {
+      const response = await axiosInstance.get(`/cases/${id}`);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.detail || error.message || `Failed to fetch case ${id} from database.`);
+      }
+      throw error;
+    }
+  },
+};
+

@@ -25,17 +25,49 @@ from agents.scam_comm_agent.schemas import (
 )
 from agents.scam_comm_agent.service import analyze_sms as analyze_sms_service
 from agents.scam_comm_agent.service import analyze_url as analyze_url_service
+from sqlalchemy.orm import Session
+
 from backend.fusion_agent.logic import aggregate_risk
 from backend.fusion_agent.schemas import AgentResult, AgentType, AggregatedRiskResponse
 from backend.orchestrator.schemas import InvestigateRequest
+from backend.repositories.agent_result_repository import AgentResultRepository
+from backend.repositories.case_repository import CaseRepository
+from backend.repositories.fusion_report_repository import FusionReportRepository
 
 log = logging.getLogger("orchestrator")
 
 
+async def process_case(
+    request: InvestigateRequest,
+    db: Session | None = None,
+) -> AggregatedRiskResponse:
+    """Orchestrate the fan-out of a case, persist results to DB, and coordinate the Fusion Agent."""
+    if db is None:
+        from backend.db.session import SessionLocal
 
-async def process_case(request: InvestigateRequest) -> AggregatedRiskResponse:
-    """Orchestrate the fan-out of a case and coordinate the Fusion Agent."""
+        with SessionLocal() as db_session:
+            return await _process_case_internal(request, db_session)
+    else:
+        return await _process_case_internal(request, db)
+
+
+async def _process_case_internal(
+    request: InvestigateRequest,
+    db: Session,
+) -> AggregatedRiskResponse:
     log.info("[case_id=%s] Orchestrator started investigation.", request.case_id)
+
+    # 1. Create Case record in PostgreSQL
+    case_repo = CaseRepository()
+    inv_type = request.evidence[0].input_type if request.evidence else "multi_modal"
+    case_obj = case_repo.create_case(
+        db,
+        status="processing",
+        investigation_type=inv_type,
+        source="orchestrator",
+        metadata_json={"evidence_count": len(request.evidence)},
+        request_case_id=request.case_id,
+    )
 
     tasks = []
     has_explicit_graph = False
@@ -73,9 +105,25 @@ async def process_case(request: InvestigateRequest) -> AggregatedRiskResponse:
     # Filter out None (failed/skipped tasks)
     valid_results = [r for r in results if r is not None]
 
+    # 2. Persist Agent Results
+    if valid_results:
+        agent_result_repo = AgentResultRepository()
+        agent_result_repo.create_results(db, case_id=case_obj.id, results=valid_results)
+
     if not valid_results:
         log.warning("[case_id=%s] No valid agent results obtained.", request.case_id)
-        # Return a default safe verdict if nothing was analyzed
+        fusion_repo = FusionReportRepository()
+        fusion_repo.create_report(
+            db,
+            case_id=case_obj.id,
+            final_verdict="safe",
+            overall_risk=0,
+            explanation="No actionable evidence was processed.",
+            recommended_action=["No action required"],
+        )
+        case_obj.status = "completed"
+        db.commit()
+
         return AggregatedRiskResponse(
             case_id=request.case_id,
             final_verdict="safe",
@@ -91,8 +139,25 @@ async def process_case(request: InvestigateRequest) -> AggregatedRiskResponse:
         len(valid_results),
     )
 
-    # Execute fusion logic synchronously in threadpool (if it were CPU bound, but it's small rules)
+    # 3. Generate Fusion Verdict & Persist Fusion Report
     fusion_verdict = aggregate_risk(valid_results)
+
+    conf_values = [r.confidence for r in valid_results if r.confidence is not None]
+    avg_confidence = (sum(conf_values) / len(conf_values)) if conf_values else None
+
+    fusion_repo = FusionReportRepository()
+    fusion_repo.create_report(
+        db,
+        case_id=case_obj.id,
+        final_verdict=fusion_verdict.final_verdict,
+        overall_risk=fusion_verdict.overall_risk,
+        confidence=avg_confidence,
+        explanation=fusion_verdict.narrative,
+        recommended_action=fusion_verdict.recommended_action,
+    )
+
+    case_obj.status = "completed"
+    db.commit()
 
     # Assemble final response
     return AggregatedRiskResponse(

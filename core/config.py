@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings
 
 # Dynamically discover the project root assuming this file is in `core/`
@@ -42,6 +42,9 @@ class AppConfig(BaseSettings):
         CORS_ORIGINS      — Comma-separated list of allowed CORS origins
                             (default: http://localhost:5173,http://127.0.0.1:5173)
         LOG_LEVEL         — Root log level (default: INFO)
+        DATABASE_URL      — PostgreSQL connection URL in SQLAlchemy format
+                            e.g. postgresql+psycopg://user:pass@host:5432/dbname
+                            Must be set in .env — no real default is shipped.
     """
 
     api_host: str = Field(
@@ -62,6 +65,18 @@ class AppConfig(BaseSettings):
     log_level: str = Field(
         default="INFO",
         description="Root logging level (DEBUG, INFO, WARNING, ERROR).",
+    )
+    # SecretStr prevents the password from appearing in repr(), logs, or
+    # validation error messages.  Call .get_secret_value() only where the
+    # raw string is strictly required (i.e. engine creation).
+    database_url: SecretStr = Field(
+        default="postgresql+psycopg://postgres:change_me@localhost:5432/sentinelai",
+        description=(
+            "PostgreSQL connection URL (SQLAlchemy format). "
+            "Override via DATABASE_URL in your .env file. "
+            "The default placeholder will connect to a local dev DB; "
+            "it is not a real credential and must be changed for any real deployment."
+        ),
     )
 
     model_config = {

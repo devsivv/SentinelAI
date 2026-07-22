@@ -1,16 +1,45 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Search, FilterX } from 'lucide-react';
 import CaseTable from '../components/CaseTable';
 import { mockCases } from '../data/mockCases';
-import type { CaseStatus, RiskLevel } from '../types/case';
+import { caseService } from '../services/api';
+import type { CaseStatus, RiskLevel, InvestigationCase } from '../types/case';
 
 export default function Cases() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<CaseStatus | 'All'>('All');
   const [riskFilter, setRiskFilter] = useState<RiskLevel | 'All'>('All');
+  const [casesList, setCasesList] = useState<InvestigationCase[]>(mockCases);
+
+  useEffect(() => {
+    let isMounted = true;
+    caseService.getCases()
+      .then((dbCases: any[]) => {
+        if (!isMounted || !Array.isArray(dbCases) || dbCases.length === 0) return;
+        const mapped: InvestigationCase[] = dbCases.map((c) => ({
+          case_id: c.case_id,
+          title: `${(c.investigation_type || 'Investigation').toUpperCase()} (${c.case_id.slice(0, 8)})`,
+          victim_name: c.metadata?.victim_name || 'Reported Victim',
+          status: 'Open',
+          risk_level: (c.fusion_report?.overall_risk || 0) >= 70 ? 'Critical' : (c.fusion_report?.overall_risk || 0) >= 40 ? 'High' : 'Medium',
+          created_at: c.created_at || new Date().toISOString(),
+          updated_at: c.updated_at || new Date().toISOString(),
+        }));
+        // Merge real DB cases with mock cases, avoiding duplicates
+        const dbIds = new Set(mapped.map((c) => c.case_id));
+        const combined = [...mapped, ...mockCases.filter((c) => !dbIds.has(c.case_id))];
+        setCasesList(combined);
+      })
+      .catch(() => {
+        // Fallback to static mockCases if backend endpoint is unavailable
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const filteredCases = useMemo(() => {
-    const results = mockCases.filter((c) => {
+    const results = casesList.filter((c) => {
       const matchesSearch = 
         c.case_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         c.victim_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -23,7 +52,7 @@ export default function Cases() {
     });
 
     return results.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-  }, [searchQuery, statusFilter, riskFilter]);
+  }, [casesList, searchQuery, statusFilter, riskFilter]);
 
   const clearFilters = () => {
     setSearchQuery('');
