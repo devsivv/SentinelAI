@@ -7,10 +7,15 @@ from __future__ import annotations
 from fastapi import APIRouter, Body, Depends
 from sqlalchemy.orm import Session
 
+import logging
+import time
+
 from backend.db.session import get_db
 from backend.fusion_agent.schemas import AggregatedRiskResponse
 from backend.orchestrator.schemas import InvestigateRequest
 from backend.orchestrator.service import process_case
+
+log = logging.getLogger("api.investigate")
 
 router = APIRouter(prefix="/investigate", tags=["orchestrator"])
 
@@ -64,5 +69,41 @@ async def investigate_case(
     """
     HTTP POST handler for holistic case analysis.
     """
-    return await process_case(request, db=db)
+    # DEBUG LOGGING START
+    t_start = time.perf_counter()
+    evidence_types = [e.input_type for e in request.evidence]
+    log.info(
+        "[case_id=%s] Request received: %d evidence items %s",
+        request.case_id,
+        len(request.evidence),
+        evidence_types,
+    )
+    # DEBUG LOGGING END
+
+    try:
+        # DEBUG LOGGING START
+        log.info("[case_id=%s] Entering orchestrator...", request.case_id)
+        # DEBUG LOGGING END
+        result = await process_case(request, db=db)
+        # DEBUG LOGGING START
+        elapsed_ms = (time.perf_counter() - t_start) * 1000
+        log.info(
+            "[case_id=%s] Orchestrator completed investigation in %.2f ms",
+            request.case_id,
+            elapsed_ms,
+        )
+        # DEBUG LOGGING END
+        return result
+    except Exception as exc:
+        # DEBUG LOGGING START
+        elapsed_ms = (time.perf_counter() - t_start) * 1000
+        log.exception(
+            "[case_id=%s] Exception in investigate_case after %.2f ms: %s",
+            request.case_id,
+            elapsed_ms,
+            exc,
+        )
+        # DEBUG LOGGING END
+        raise
+
 

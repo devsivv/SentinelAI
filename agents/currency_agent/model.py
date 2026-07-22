@@ -145,6 +145,9 @@ def _load_from_state_dict(path: Path) -> nn.Module:
     return backbone
 
 
+import time
+
+
 def get_model(path: Optional[Path] = None) -> nn.Module:
     """Return the singleton model, loading it on first call.
 
@@ -167,9 +170,24 @@ def get_model(path: Optional[Path] = None) -> nn.Module:
     with _lock:
         # Double-checked locking: another thread may have loaded while we waited.
         if _model is None:
-            _model = _load_model(path)
+            # DEBUG LOGGING START
+            t_start = time.perf_counter()
+            log.info("Loading Currency model (MobileNetV2)...")
+            # DEBUG LOGGING END
+            try:
+                _model = _load_model(path)
+                # DEBUG LOGGING START
+                elapsed = (time.perf_counter() - t_start) * 1000
+                log.info("Loaded Currency model successfully in %.2f ms", elapsed)
+                # DEBUG LOGGING END
+            except Exception as exc:
+                # DEBUG LOGGING START
+                log.exception("Failed to load Currency model: %s", exc)
+                # DEBUG LOGGING END
+                raise
 
     return _model
+
 
 
 def reset_model_cache() -> None:

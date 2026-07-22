@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from typing import Any
 
 from agents.fraud_agent.schemas import FraudAnalysisRequest, TransactionPayload
@@ -55,130 +56,221 @@ async def _process_case_internal(
     request: InvestigateRequest,
     db: Session,
 ) -> AggregatedRiskResponse:
-    log.info("[case_id=%s] Orchestrator started investigation.", request.case_id)
+    # DEBUG LOGGING START
+    t_case_start = time.perf_counter()
+    evidence_types = [item.input_type for item in request.evidence]
+    log.info("START process_case")
+    log.info("[case_id=%s] Received case with evidence types: %s", request.case_id, evidence_types)
+    # DEBUG LOGGING END
 
-    # 1. Create Case record in PostgreSQL
-    case_repo = CaseRepository()
-    inv_type = request.evidence[0].input_type if request.evidence else "multi_modal"
-    case_obj = case_repo.create_case(
-        db,
-        status="processing",
-        investigation_type=inv_type,
-        source="orchestrator",
-        metadata_json={"evidence_count": len(request.evidence)},
-        request_case_id=request.case_id,
-    )
+    try:
+        # 1. Create Case record in PostgreSQL
+        # DEBUG LOGGING START
+        log.info("[case_id=%s] Persisting case record...", request.case_id)
+        # DEBUG LOGGING END
+        case_repo = CaseRepository()
+        inv_type = request.evidence[0].input_type if request.evidence else "multi_modal"
+        case_obj = case_repo.create_case(
+            db,
+            status="processing",
+            investigation_type=inv_type,
+            source="orchestrator",
+            metadata_json={"evidence_count": len(request.evidence)},
+            request_case_id=request.case_id,
+        )
 
-    tasks = []
-    has_explicit_graph = False
+        tasks = []
+        has_explicit_graph = False
 
-    # Map evidence items to appropriate agent public service methods
-    for item in request.evidence:
-        if item.input_type == "sms":
-            tasks.append(_process_sms(request.case_id, item.payload))
-        elif item.input_type == "url":
-            tasks.append(_process_url(request.case_id, item.payload))
-        elif item.input_type == "transaction":
-            tasks.append(_process_transaction(request.case_id, item.payload))
-        elif item.input_type in ("image", "currency"):
-            tasks.append(_process_currency(request.case_id, item.payload))
-        elif item.input_type == "graph_data":
-            tasks.append(_process_graph(request.case_id, item.payload))
-            has_explicit_graph = True
-        elif item.input_type == "location":
-            tasks.append(_process_geo(request.case_id, item.payload))
-        else:
-            log.warning(
-                "[case_id=%s] Unknown input_type '%s', skipping.",
-                request.case_id,
-                item.input_type,
+        # DEBUG LOGGING START
+        log.info("[case_id=%s] Scheduling tasks...", request.case_id)
+        # DEBUG LOGGING END
+
+        # Map evidence items to appropriate agent public service methods
+        for item in request.evidence:
+            if item.input_type == "sms":
+                tasks.append(_process_sms(request.case_id, item.payload))
+                # DEBUG LOGGING START
+                log.info("[case_id=%s] SMS task created", request.case_id)
+                # DEBUG LOGGING END
+            elif item.input_type == "url":
+                tasks.append(_process_url(request.case_id, item.payload))
+                # DEBUG LOGGING START
+                log.info("[case_id=%s] URL task created", request.case_id)
+                # DEBUG LOGGING END
+            elif item.input_type == "transaction":
+                tasks.append(_process_transaction(request.case_id, item.payload))
+                # DEBUG LOGGING START
+                log.info("[case_id=%s] Fraud task created", request.case_id)
+                # DEBUG LOGGING END
+            elif item.input_type in ("image", "currency"):
+                tasks.append(_process_currency(request.case_id, item.payload))
+                # DEBUG LOGGING START
+                log.info("[case_id=%s] Currency task created", request.case_id)
+                # DEBUG LOGGING END
+            elif item.input_type == "graph_data":
+                tasks.append(_process_graph(request.case_id, item.payload))
+                has_explicit_graph = True
+                # DEBUG LOGGING START
+                log.info("[case_id=%s] Graph task created", request.case_id)
+                # DEBUG LOGGING END
+            elif item.input_type == "location":
+                tasks.append(_process_geo(request.case_id, item.payload))
+                # DEBUG LOGGING START
+                log.info("[case_id=%s] Geo task created", request.case_id)
+                # DEBUG LOGGING END
+            else:
+                log.warning(
+                    "[case_id=%s] Unknown input_type '%s', skipping.",
+                    request.case_id,
+                    item.input_type,
+                )
+
+        # Automatically trigger Graph Agent on raw evidence if not explicitly passed
+        if not has_explicit_graph and request.evidence:
+            raw_list = [item.model_dump(mode="json") for item in request.evidence]
+            tasks.append(_process_graph(request.case_id, {"raw_evidence": raw_list}))
+            # DEBUG LOGGING START
+            log.info("[case_id=%s] Auto-triggered Graph task created", request.case_id)
+            # DEBUG LOGGING END
+
+        # DEBUG LOGGING START
+        log.info("[case_id=%s] Awaiting asyncio.gather() across %d tasks...", request.case_id, len(tasks))
+        t_gather_start = time.perf_counter()
+        # DEBUG LOGGING END
+
+        # Fan out concurrently
+        results = await asyncio.gather(*tasks)
+
+        # DEBUG LOGGING START
+        log.info(
+            "[case_id=%s] asyncio.gather() finished in %.2f ms",
+            request.case_id,
+            (time.perf_counter() - t_gather_start) * 1000,
+        )
+        # DEBUG LOGGING END
+
+        # Filter out None (failed/skipped tasks)
+        valid_results = [r for r in results if r is not None]
+
+        # 2. Persist Agent Results
+        if valid_results:
+            # DEBUG LOGGING START
+            log.info("[case_id=%s] Persisting %d agent results...", request.case_id, len(valid_results))
+            # DEBUG LOGGING END
+            agent_result_repo = AgentResultRepository()
+            agent_result_repo.create_results(db, case_id=case_obj.id, results=valid_results)
+
+        if not valid_results:
+            log.warning("[case_id=%s] No valid agent results obtained.", request.case_id)
+            fusion_repo = FusionReportRepository()
+            fusion_repo.create_report(
+                db,
+                case_id=case_obj.id,
+                final_verdict="safe",
+                overall_risk=0,
+                explanation="No actionable evidence was processed.",
+                recommended_action=["No action required"],
+            )
+            case_obj.status = "completed"
+            db.commit()
+
+            # DEBUG LOGGING START
+            log.info("END process_case [no valid results]")
+            # DEBUG LOGGING END
+            return AggregatedRiskResponse(
+                case_id=request.case_id,
+                final_verdict="safe",
+                overall_risk=0,
+                narrative="No actionable evidence was processed.",
+                recommended_action=["No action required"],
+                evidence={},
             )
 
-    # Automatically trigger Graph Agent on raw evidence if not explicitly passed
-    if not has_explicit_graph and request.evidence:
-        raw_list = [item.model_dump(mode="json") for item in request.evidence]
-        tasks.append(_process_graph(request.case_id, {"raw_evidence": raw_list}))
+        # DEBUG LOGGING START
+        log.info("[case_id=%s] Fusion starting...", request.case_id)
+        t_fusion_start = time.perf_counter()
+        # DEBUG LOGGING END
 
-    # Fan out concurrently
-    results = await asyncio.gather(*tasks)
+        # 3. Generate Fusion Verdict & Persist Fusion Report
+        fusion_verdict = aggregate_risk(valid_results)
 
-    # Filter out None (failed/skipped tasks)
-    valid_results = [r for r in results if r is not None]
+        # DEBUG LOGGING START
+        log.info(
+            "[case_id=%s] Fusion completed in %.2f ms — verdict=%s",
+            request.case_id,
+            (time.perf_counter() - t_fusion_start) * 1000,
+            fusion_verdict.final_verdict,
+        )
+        # DEBUG LOGGING END
 
-    # 2. Persist Agent Results
-    if valid_results:
-        agent_result_repo = AgentResultRepository()
-        agent_result_repo.create_results(db, case_id=case_obj.id, results=valid_results)
+        conf_values = [r.confidence for r in valid_results if r.confidence is not None]
+        avg_confidence = (sum(conf_values) / len(conf_values)) if conf_values else None
 
-    if not valid_results:
-        log.warning("[case_id=%s] No valid agent results obtained.", request.case_id)
+        # DEBUG LOGGING START
+        log.info("[case_id=%s] Persisting fusion report...", request.case_id)
+        # DEBUG LOGGING END
+
         fusion_repo = FusionReportRepository()
         fusion_repo.create_report(
             db,
             case_id=case_obj.id,
-            final_verdict="safe",
-            overall_risk=0,
-            explanation="No actionable evidence was processed.",
-            recommended_action=["No action required"],
+            final_verdict=fusion_verdict.final_verdict,
+            overall_risk=fusion_verdict.overall_risk,
+            confidence=avg_confidence,
+            explanation=fusion_verdict.narrative,
+            recommended_action=fusion_verdict.recommended_action,
         )
+
         case_obj.status = "completed"
         db.commit()
 
+        # DEBUG LOGGING START
+        elapsed_case = (time.perf_counter() - t_case_start) * 1000
+        log.info("Returning response — Entire investigate request took %.2f ms", elapsed_case)
+        log.info("END process_case")
+        # DEBUG LOGGING END
+
+        # Assemble final response
         return AggregatedRiskResponse(
             case_id=request.case_id,
-            final_verdict="safe",
-            overall_risk=0,
-            narrative="No actionable evidence was processed.",
-            recommended_action=["No action required"],
-            evidence={},
+            final_verdict=fusion_verdict.final_verdict,
+            overall_risk=fusion_verdict.overall_risk,
+            narrative=fusion_verdict.narrative,
+            recommended_action=fusion_verdict.recommended_action,
+            evidence={r.agent: r.model_dump(mode="json") for r in valid_results},
         )
 
-    log.info(
-        "[case_id=%s] Aggregating %d agent results via Fusion Agent.",
-        request.case_id,
-        len(valid_results),
-    )
-
-    # 3. Generate Fusion Verdict & Persist Fusion Report
-    fusion_verdict = aggregate_risk(valid_results)
-
-    conf_values = [r.confidence for r in valid_results if r.confidence is not None]
-    avg_confidence = (sum(conf_values) / len(conf_values)) if conf_values else None
-
-    fusion_repo = FusionReportRepository()
-    fusion_repo.create_report(
-        db,
-        case_id=case_obj.id,
-        final_verdict=fusion_verdict.final_verdict,
-        overall_risk=fusion_verdict.overall_risk,
-        confidence=avg_confidence,
-        explanation=fusion_verdict.narrative,
-        recommended_action=fusion_verdict.recommended_action,
-    )
-
-    case_obj.status = "completed"
-    db.commit()
-
-    # Assemble final response
-    return AggregatedRiskResponse(
-        case_id=request.case_id,
-        final_verdict=fusion_verdict.final_verdict,
-        overall_risk=fusion_verdict.overall_risk,
-        narrative=fusion_verdict.narrative,
-        recommended_action=fusion_verdict.recommended_action,
-        evidence={r.agent: r.model_dump(mode="json") for r in valid_results},
-    )
+    except Exception as exc:
+        # DEBUG LOGGING START
+        log.exception("Failure while processing case_id=%s: %s", request.case_id, exc)
+        # DEBUG LOGGING END
+        raise
 
 
 async def _process_sms(case_id: str, payload: dict[str, Any]) -> AgentResult | None:
+    # DEBUG LOGGING START
+    t_start = time.perf_counter()
+    log.info("[case_id=%s] ENTER _process_sms", case_id)
+    log.info("[case_id=%s] SMS input received: %s", case_id, payload)
+    # DEBUG LOGGING END
     try:
         sms_payload = SMSPayload(**payload)
         req = ScamCommAnalysisRequest(
             case_id=case_id, input_type="sms", payload=sms_payload
         )
+        # DEBUG LOGGING START
+        log.info("[case_id=%s] SMS prediction started...", case_id)
+        # DEBUG LOGGING END
         res = await analyze_sms_service(req)
+        
+        # DEBUG LOGGING START
+        elapsed = (time.perf_counter() - t_start) * 1000
+        log.info("[case_id=%s] SMS prediction finished in %.2f ms", case_id, elapsed)
+        log.info("[case_id=%s] SMS prediction took %.2f ms", case_id, elapsed)
+        # DEBUG LOGGING END
 
-        return AgentResult(
+        result = AgentResult(
             agent=AgentType.SCAM_SMS,
             case_id=res.case_id,
             verdict=res.verdict,
@@ -187,20 +279,41 @@ async def _process_sms(case_id: str, payload: dict[str, Any]) -> AgentResult | N
             category=res.category,
             evidence=res.evidence,
         )
+        # DEBUG LOGGING START
+        log.info("[case_id=%s] SMS response generated, EXIT _process_sms", case_id)
+        log.info("SMS completed")
+        # DEBUG LOGGING END
+        return result
     except Exception as exc:
-        log.error("[case_id=%s] SMS Agent error: %s", case_id, exc)
+        # DEBUG LOGGING START
+        log.exception("[case_id=%s] SMS Agent exception: %s", case_id, exc)
+        # DEBUG LOGGING END
         return None
 
 
 async def _process_url(case_id: str, payload: dict[str, Any]) -> AgentResult | None:
+    # DEBUG LOGGING START
+    t_start = time.perf_counter()
+    log.info("[case_id=%s] ENTER _process_url", case_id)
+    log.info("[case_id=%s] URL input received: %s", case_id, payload)
+    # DEBUG LOGGING END
     try:
         url_payload = URLPayload(**payload)
         req = ScamCommAnalysisRequest(
             case_id=case_id, input_type="url", payload=url_payload
         )
+        # DEBUG LOGGING START
+        log.info("[case_id=%s] URL prediction started...", case_id)
+        # DEBUG LOGGING END
         res = await analyze_url_service(req)
 
-        return AgentResult(
+        # DEBUG LOGGING START
+        elapsed = (time.perf_counter() - t_start) * 1000
+        log.info("[case_id=%s] URL prediction finished in %.2f ms", case_id, elapsed)
+        log.info("[case_id=%s] URL prediction took %.2f ms", case_id, elapsed)
+        # DEBUG LOGGING END
+
+        result = AgentResult(
             agent=AgentType.SCAM_URL,
             case_id=res.case_id,
             verdict=res.verdict,
@@ -209,22 +322,43 @@ async def _process_url(case_id: str, payload: dict[str, Any]) -> AgentResult | N
             category=res.category,
             evidence=res.evidence,
         )
+        # DEBUG LOGGING START
+        log.info("[case_id=%s] URL response generated, EXIT _process_url", case_id)
+        log.info("URL completed")
+        # DEBUG LOGGING END
+        return result
     except Exception as exc:
-        log.error("[case_id=%s] URL Agent error: %s", case_id, exc)
+        # DEBUG LOGGING START
+        log.exception("[case_id=%s] URL Agent exception: %s", case_id, exc)
+        # DEBUG LOGGING END
         return None
 
 
 async def _process_transaction(
     case_id: str, payload: dict[str, Any]
 ) -> AgentResult | None:
+    # DEBUG LOGGING START
+    t_start = time.perf_counter()
+    log.info("[case_id=%s] ENTER _process_transaction", case_id)
+    log.info("[case_id=%s] Transaction input received", case_id)
+    # DEBUG LOGGING END
     try:
         tx_payload = TransactionPayload(**payload)
         req = FraudAnalysisRequest(
             case_id=case_id, input_type="transaction", payload=tx_payload
         )
+        # DEBUG LOGGING START
+        log.info("[case_id=%s] Fraud prediction started...", case_id)
+        # DEBUG LOGGING END
         res = await analyze_fraud_service(req)
 
-        return AgentResult(
+        # DEBUG LOGGING START
+        elapsed = (time.perf_counter() - t_start) * 1000
+        log.info("[case_id=%s] Fraud prediction finished in %.2f ms", case_id, elapsed)
+        log.info("[case_id=%s] Fraud prediction took %.2f ms", case_id, elapsed)
+        # DEBUG LOGGING END
+
+        result = AgentResult(
             agent=AgentType.FRAUD,
             case_id=res.case_id,
             verdict=res.verdict,
@@ -233,12 +367,24 @@ async def _process_transaction(
             category=res.category,
             evidence=res.evidence,
         )
+        # DEBUG LOGGING START
+        log.info("[case_id=%s] Fraud response generated, EXIT _process_transaction", case_id)
+        log.info("Fraud completed")
+        # DEBUG LOGGING END
+        return result
     except Exception as exc:
-        log.error("[case_id=%s] Fraud Agent error: %s", case_id, exc)
+        # DEBUG LOGGING START
+        log.exception("[case_id=%s] Fraud Agent exception: %s", case_id, exc)
+        # DEBUG LOGGING END
         return None
 
 
 async def _process_currency(case_id: str, payload: dict[str, Any]) -> AgentResult | None:
+    # DEBUG LOGGING START
+    t_start = time.perf_counter()
+    log.info("[case_id=%s] ENTER _process_currency", case_id)
+    log.info("[case_id=%s] Currency input received", case_id)
+    # DEBUG LOGGING END
     try:
         import base64
         from agents.currency_agent.predict import predict, build_verdict
@@ -254,8 +400,17 @@ async def _process_currency(case_id: str, payload: dict[str, Any]) -> AgentResul
         else:
             raw_bytes = image_data
 
+        # DEBUG LOGGING START
+        log.info("[case_id=%s] Currency prediction started...", case_id)
+        # DEBUG LOGGING END
         result = predict(raw_bytes, case_id=case_id)
         verdict_dict = build_verdict(result, case_id=case_id)
+
+        # DEBUG LOGGING START
+        elapsed = (time.perf_counter() - t_start) * 1000
+        log.info("[case_id=%s] Currency prediction finished in %.2f ms", case_id, elapsed)
+        log.info("[case_id=%s] Currency prediction took %.2f ms", case_id, elapsed)
+        # DEBUG LOGGING END
 
         evidence = CurrencyEvidence(
             predicted_class=result.predicted_class,
@@ -263,7 +418,7 @@ async def _process_currency(case_id: str, payload: dict[str, Any]) -> AgentResul
             image_size=result.image_size,
         )
 
-        return AgentResult(
+        res = AgentResult(
             agent=AgentType.CURRENCY,
             case_id=case_id,
             verdict=verdict_dict["verdict"],
@@ -272,12 +427,24 @@ async def _process_currency(case_id: str, payload: dict[str, Any]) -> AgentResul
             category=verdict_dict["category"],
             evidence=evidence,
         )
+        # DEBUG LOGGING START
+        log.info("[case_id=%s] Currency response generated, EXIT _process_currency", case_id)
+        log.info("Currency completed")
+        # DEBUG LOGGING END
+        return res
     except Exception as exc:
-        log.error("[case_id=%s] Currency Agent error: %s", case_id, exc)
+        # DEBUG LOGGING START
+        log.exception("[case_id=%s] Currency Agent exception: %s", case_id, exc)
+        # DEBUG LOGGING END
         return None
 
 
 async def _process_graph(case_id: str, payload: dict[str, Any]) -> AgentResult | None:
+    # DEBUG LOGGING START
+    t_start = time.perf_counter()
+    log.info("[case_id=%s] ENTER _process_graph", case_id)
+    log.info("[case_id=%s] Graph input received", case_id)
+    # DEBUG LOGGING END
     try:
         from agents.graph_agent.schemas import GraphAnalysisRequest, GraphPayload
         from agents.graph_agent.service import analyze_graph
@@ -286,9 +453,18 @@ async def _process_graph(case_id: str, payload: dict[str, Any]) -> AgentResult |
         req = GraphAnalysisRequest(
             case_id=case_id, input_type="graph_data", payload=graph_payload
         )
+        # DEBUG LOGGING START
+        log.info("[case_id=%s] Graph analysis started...", case_id)
+        # DEBUG LOGGING END
         res = await analyze_graph(req)
 
-        return AgentResult(
+        # DEBUG LOGGING START
+        elapsed = (time.perf_counter() - t_start) * 1000
+        log.info("[case_id=%s] Graph analysis finished in %.2f ms", case_id, elapsed)
+        log.info("[case_id=%s] Graph analysis took %.2f ms", case_id, elapsed)
+        # DEBUG LOGGING END
+
+        result = AgentResult(
             agent=AgentType.GRAPH,
             case_id=res.case_id,
             verdict=res.verdict,
@@ -297,12 +473,24 @@ async def _process_graph(case_id: str, payload: dict[str, Any]) -> AgentResult |
             category=res.category,
             evidence=res.evidence,
         )
+        # DEBUG LOGGING START
+        log.info("[case_id=%s] Graph response generated, EXIT _process_graph", case_id)
+        log.info("Graph completed")
+        # DEBUG LOGGING END
+        return result
     except Exception as exc:
-        log.error("[case_id=%s] Graph Agent error: %s", case_id, exc)
+        # DEBUG LOGGING START
+        log.exception("[case_id=%s] Graph Agent exception: %s", case_id, exc)
+        # DEBUG LOGGING END
         return None
 
 
 async def _process_geo(case_id: str, payload: dict[str, Any]) -> AgentResult | None:
+    # DEBUG LOGGING START
+    t_start = time.perf_counter()
+    log.info("[case_id=%s] ENTER _process_geo", case_id)
+    log.info("[case_id=%s] Geo input received", case_id)
+    # DEBUG LOGGING END
     try:
         from agents.geo_agent.schemas import GeoAnalysisRequest, GeoPayload
         from agents.geo_agent.service import analyze_location
@@ -311,9 +499,18 @@ async def _process_geo(case_id: str, payload: dict[str, Any]) -> AgentResult | N
         req = GeoAnalysisRequest(
             case_id=case_id, input_type="location", payload=geo_payload
         )
+        # DEBUG LOGGING START
+        log.info("[case_id=%s] Geo analysis started...", case_id)
+        # DEBUG LOGGING END
         res = await analyze_location(req)
 
-        return AgentResult(
+        # DEBUG LOGGING START
+        elapsed = (time.perf_counter() - t_start) * 1000
+        log.info("[case_id=%s] Geo analysis finished in %.2f ms", case_id, elapsed)
+        log.info("[case_id=%s] Geo analysis took %.2f ms", case_id, elapsed)
+        # DEBUG LOGGING END
+
+        result = AgentResult(
             agent=AgentType.GEO,
             case_id=res.case_id,
             verdict=res.verdict,
@@ -322,6 +519,14 @@ async def _process_geo(case_id: str, payload: dict[str, Any]) -> AgentResult | N
             category=res.category,
             evidence=res.evidence,
         )
+        # DEBUG LOGGING START
+        log.info("[case_id=%s] Geo response generated, EXIT _process_geo", case_id)
+        log.info("Geo completed")
+        # DEBUG LOGGING END
+        return result
     except Exception as exc:
-        log.error("[case_id=%s] Geo Agent error: %s", case_id, exc)
+        # DEBUG LOGGING START
+        log.exception("[case_id=%s] Geo Agent exception: %s", case_id, exc)
+        # DEBUG LOGGING END
         return None
+

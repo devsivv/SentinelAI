@@ -35,11 +35,15 @@ Each agent model module keeps its own module-level ``_cache`` and
 
 from __future__ import annotations
 
+import logging
 import threading
+import time
 from pathlib import Path
 from typing import Any
 
 import joblib
+
+log = logging.getLogger("core.loader")
 
 
 def load_joblib_model(
@@ -93,10 +97,22 @@ def load_joblib_model(
                     "Verify the path in configs/models.yaml."
                 )
             try:
+                # DEBUG LOGGING START
+                t_start = time.perf_counter()
+                log.info("Loading %s from '%s'...", label, path)
+                # DEBUG LOGGING END
                 cache_dict[cache_key] = joblib.load(str(path))
+                # DEBUG LOGGING START
+                elapsed = (time.perf_counter() - t_start) * 1000
+                log.info("Loaded %s successfully in %.2f ms", label, elapsed)
+                # DEBUG LOGGING END
             except Exception as exc:
+                # DEBUG LOGGING START
+                log.exception("Failed to load %s from '%s': %s", label, path, exc)
+                # DEBUG LOGGING END
                 raise RuntimeError(
                     f"Failed to load {label} from '{path}': {exc}"
                 ) from exc
 
     return cache_dict[cache_key]
+
