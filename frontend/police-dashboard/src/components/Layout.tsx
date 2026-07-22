@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import Footer from './Footer';
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -18,13 +19,14 @@ export default function Layout() {
       <div className="flex flex-1 flex-col overflow-hidden min-w-0">
         <Header onMenuClick={openSidebar} />
         <main
-          className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8"
+          className="flex-1 overflow-y-auto flex flex-col justify-between"
           id="main-content"
           aria-label="Main content"
         >
-          <div className="mx-auto max-w-7xl">
+          <div className="mx-auto max-w-7xl w-full p-4 sm:p-6 lg:p-8">
             <Outlet />
           </div>
+          <Footer />
         </main>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { LayoutDashboard, FolderOpen, AlertTriangle, X } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
+import SentinelAILogo from './SentinelAILogo';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -24,11 +25,8 @@ function SidebarContent({ onClose }: { onClose: () => void }) {
   return (
     <div className="flex h-full w-64 flex-col bg-slate-900 text-slate-300">
       {/* Brand header */}
-      <div className="flex h-16 items-center justify-between px-6 bg-slate-950 shrink-0">
-        <h1 className="text-xl font-bold text-white tracking-tight">
-          Sentinel<span className="text-blue-500">AI</span>{' '}
-          <span className="text-slate-500 text-sm font-normal">Police</span>
-        </h1>
+      <div className="flex h-16 items-center justify-between px-5 bg-slate-950 shrink-0 border-b border-slate-800">
+        <SentinelAILogo size="md" showIcon subtitle="Police Workspace" />
         {/* Close button — only visible on mobile */}
         <button
           onClick={onClose}
@@ -55,10 +53,13 @@ function SidebarContent({ onClose }: { onClose: () => void }) {
         ))}
       </nav>
 
-      {/* Footer — production-neutral, no sprint/phase text */}
+      {/* Footer */}
       <div className="p-4 border-t border-slate-800 shrink-0">
-        <p className="text-xs text-slate-500 text-center">
-          © {new Date().getFullYear()} SentinelAI
+        <p className="text-xs text-slate-400 text-center font-medium">
+          Built by Team Riyal Intelligence
+        </p>
+        <p className="text-[10px] text-slate-500 text-center mt-0.5">
+          ET AI Hackathon &bull; &copy; 2026 SentinelAI
         </p>
       </div>
     </div>

@@ -6,7 +6,6 @@ type ErrorVariant = 'default' | 'timeout' | 'network' | 'not_found' | 'unavailab
 interface ErrorStateProps {
   title?: string;
   message?: string;
-  /** One of the classified error types from classifyApiError */
   variant?: ErrorVariant;
   onRetry?: () => void;
   onBack?: () => void;
@@ -22,42 +21,42 @@ const variantConfig: Record<
     icon: <AlertCircle className="h-6 w-6 text-red-400" aria-hidden="true" />,
     defaultTitle: 'An error occurred',
     defaultMessage: 'Something went wrong. Please try again.',
-    colorClasses: 'bg-red-50 border-red-200 text-red-800',
+    colorClasses: 'bg-red-950/40 border-red-800/50 text-red-200',
   },
   timeout: {
     icon: <Clock className="h-6 w-6 text-amber-400" aria-hidden="true" />,
     defaultTitle: 'Request timed out',
     defaultMessage:
       'SentinelAI analysis is taking longer than expected. This may be due to cold-start inference. Please retry.',
-    colorClasses: 'bg-amber-50 border-amber-200 text-amber-800',
+    colorClasses: 'bg-amber-950/40 border-amber-800/50 text-amber-200',
   },
   network: {
     icon: <WifiOff className="h-6 w-6 text-red-400" aria-hidden="true" />,
     defaultTitle: 'Network disconnected',
     defaultMessage:
       'Unable to reach the SentinelAI backend. Please check your connection and retry.',
-    colorClasses: 'bg-red-50 border-red-200 text-red-800',
+    colorClasses: 'bg-red-950/40 border-red-800/50 text-red-200',
   },
   not_found: {
     icon: <ShieldOff className="h-6 w-6 text-gray-400" aria-hidden="true" />,
-    defaultTitle: 'Case not found',
+    defaultTitle: 'Resource not found',
     defaultMessage:
-      'This case may have been deleted or the ID is invalid. It does not exist in the database.',
-    colorClasses: 'bg-gray-50 border-gray-200 text-gray-800',
+      'The requested resource or Case ID does not exist or may have been removed.',
+    colorClasses: 'bg-gray-900/60 border-gray-700/50 text-gray-200',
   },
   unavailable: {
     icon: <WifiOff className="h-6 w-6 text-red-400" aria-hidden="true" />,
     defaultTitle: 'Backend unavailable',
     defaultMessage:
       'Unable to reach the SentinelAI backend. The service may be starting up. Please retry in a moment.',
-    colorClasses: 'bg-red-50 border-red-200 text-red-800',
+    colorClasses: 'bg-red-950/40 border-red-800/50 text-red-200',
   },
   server_error: {
     icon: <ServerCrash className="h-6 w-6 text-red-400" aria-hidden="true" />,
     defaultTitle: 'Server error',
     defaultMessage:
       'The SentinelAI backend returned an unexpected error. Please retry or contact support.',
-    colorClasses: 'bg-red-50 border-red-200 text-red-800',
+    colorClasses: 'bg-red-950/40 border-red-800/50 text-red-200',
   },
 };
 
@@ -76,23 +75,23 @@ export default function ErrorState({
 
   return (
     <div
-      className={`rounded-lg border p-5 ${config.colorClasses}`}
+      className={`rounded-xl border p-6 backdrop-blur-md shadow-xl ${config.colorClasses}`}
       role="alert"
       aria-live="assertive"
     >
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-shrink-0">{config.icon}</div>
+      <div className="flex flex-col sm:flex-row gap-4 items-start">
+        <div className="p-2 rounded-lg bg-black/20 shrink-0">{config.icon}</div>
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-semibold">{displayTitle}</h3>
-          <p className="mt-1 text-sm opacity-90 break-words">{displayMessage}</p>
+          <h3 className="text-base font-semibold">{displayTitle}</h3>
+          <p className="mt-1 text-sm opacity-90 break-words leading-relaxed">{displayMessage}</p>
 
           {(onRetry || onBack || backTo) && (
-            <div className="mt-4 flex flex-wrap gap-3">
+            <div className="mt-5 flex flex-wrap gap-3">
               {onRetry && (
                 <button
                   type="button"
                   onClick={onRetry}
-                  className="inline-flex items-center justify-center rounded-md bg-white border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 transition-colors min-h-[44px]"
+                  className="inline-flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 px-4 py-2 text-sm font-semibold text-white transition-colors min-h-[44px]"
                 >
                   Retry
                 </button>
@@ -101,7 +100,7 @@ export default function ErrorState({
                 <button
                   type="button"
                   onClick={onBack}
-                  className="inline-flex items-center justify-center rounded-md bg-white border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 transition-colors min-h-[44px]"
+                  className="inline-flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 px-4 py-2 text-sm font-semibold text-white transition-colors min-h-[44px]"
                 >
                   {backLabel}
                 </button>
@@ -109,23 +108,11 @@ export default function ErrorState({
               {backTo && !onBack && (
                 <Link
                   to={backTo}
-                  className="inline-flex items-center justify-center rounded-md bg-white border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 transition-colors min-h-[44px]"
+                  className="inline-flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 px-4 py-2 text-sm font-semibold text-white transition-colors min-h-[44px]"
                 >
                   {backLabel}
                 </Link>
               )}
-              <Link
-                to="/cases"
-                className="inline-flex items-center justify-center rounded-md bg-white border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 transition-colors min-h-[44px]"
-              >
-                Back to Cases
-              </Link>
-              <Link
-                to="/"
-                className="inline-flex items-center justify-center rounded-md bg-white border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 transition-colors min-h-[44px]"
-              >
-                Dashboard
-              </Link>
             </div>
           )}
         </div>

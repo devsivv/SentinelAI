@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, RefreshCw } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Activity } from 'lucide-react';
 import { mockCaseDetails } from '../data/mockCaseDetails';
 import Badge from '../components/Badge';
 import InvestigationSummaryCard from '../components/InvestigationSummaryCard';
@@ -129,8 +129,8 @@ export default function CaseDetails() {
   // ── Derived state ──────────────────────────────────────────────────────────
   const baseMock = mockCaseDetails[id || ''] ?? null;
 
-  // Show case-not-found page when: backend returned 404 AND no mock fallback
-  const isCaseNotFound = errorVariant === 'not_found' && !baseMock && !dbCaseData;
+  // Show case-not-found page when backend returned 404 (regardless of mock availability)
+  const isCaseNotFound = errorVariant === 'not_found' && !dbCaseData;
 
   // Show backend-error banner when: non-404 error (timeout, network, server)
   const isBackendError = !!errorVariant && errorVariant !== 'not_found';
@@ -161,8 +161,9 @@ export default function CaseDetails() {
     case_id: dbCaseData?.case_id || baseMock?.case_id || id || 'CAS-UNKNOWN',
     title:
       dbCaseData?.metadata_json?.title ||
+      (dbCaseData ? `${(dbCaseData.investigation_type || 'Investigation').toUpperCase()} (${(id || '').slice(0, 8)})` : null) ||
       baseMock?.title ||
-      `${(dbCaseData?.investigation_type || 'Investigation').toUpperCase()} (${(id || '').slice(0, 8)})`,
+      `Investigation ${(id || '').slice(0, 8)}`,
     victim_name:
       dbCaseData?.metadata_json?.victim_name || baseMock?.victim_name || 'Not Available',
     assigned_officer:
@@ -173,15 +174,17 @@ export default function CaseDetails() {
       ? 'Under Review'
       : dbCaseData?.status?.toLowerCase() === 'completed'
       ? 'Closed'
+      : dbCaseData?.status?.toLowerCase() === 'open'
+      ? 'Open'
       : baseMock?.status || 'Open') as CaseStatus,
     risk_level: baseMock?.risk_level || 'Medium',
-    fusion_verdict: baseMock?.fusion_verdict || 'Pending Analysis',
-    overall_risk_score: baseMock?.overall_risk_score || 0,
-    confidence_score: baseMock?.confidence_score || 0,
-    investigation_summary: baseMock?.investigation_summary || 'No summary available.',
-    agent_results: baseMock?.agent_results || [],
+    fusion_verdict: 'Pending Analysis',
+    overall_risk_score: 0,
+    confidence_score: 0,
+    investigation_summary: '',
+    agent_results: [],
     evidence: dbCaseData?.metadata_json?.evidence || baseMock?.evidence || [],
-    recommended_actions: baseMock?.recommended_actions || [],
+    recommended_actions: [],
     timeline: dbCaseData?.metadata_json?.timeline || baseMock?.timeline || [],
   };
 
@@ -502,16 +505,26 @@ export default function CaseDetails() {
           <InvestigationSummaryCard details={displayDetails} />
 
           {/* 3. Agent Results — 1 col mobile, 2 col tablet, 3 col desktop */}
-          {displayDetails.agent_results.length > 0 && (
-            <div>
-              <h3 className="text-lg font-semibold leading-6 text-gray-900 mb-4">Agent Results</h3>
+          <div>
+            <h3 className="text-base sm:text-lg font-semibold leading-6 text-gray-900 mb-3 sm:mb-4">Agent Results</h3>
+            {displayDetails.agent_results.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {displayDetails.agent_results.map((result, idx) => (
                   <AgentResultCard key={idx} result={result} />
                 ))}
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white p-8 text-center">
+                <div className="mb-3 p-3 bg-gray-100 rounded-full">
+                  <Activity className="h-6 w-6 text-gray-400" aria-hidden="true" />
+                </div>
+                <p className="text-sm font-medium text-gray-700 mb-1">No agent analysis available</p>
+                <p className="text-xs text-gray-500">
+                  Run a live analysis to see results from the SMS, URL, Transaction, and Graph agents.
+                </p>
+              </div>
+            )}
+          </div>
 
           {/* 4. Geo Intelligence */}
           <GeoIntelligencePanel
