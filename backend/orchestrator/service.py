@@ -34,6 +34,7 @@ from backend.orchestrator.schemas import InvestigateRequest
 from backend.repositories.agent_result_repository import AgentResultRepository
 from backend.repositories.case_repository import CaseRepository
 from backend.repositories.fusion_report_repository import FusionReportRepository
+from core.config import app_config
 
 log = logging.getLogger("orchestrator")
 
@@ -134,19 +135,24 @@ async def _process_case_internal(
             log.info("[case_id=%s] Auto-triggered Graph task created", request.case_id)
             # DEBUG LOGGING END
 
-        # DEBUG LOGGING START
-        log.info("[case_id=%s] Awaiting asyncio.gather() across %d tasks...", request.case_id, len(tasks))
-        t_gather_start = time.perf_counter()
-        # DEBUG LOGGING END
-
-        # Fan out concurrently
-        results = await asyncio.gather(*tasks)
+        t_tasks_start = time.perf_counter()
+        if app_config.low_memory_mode:
+            # Sequential execution under memory-constrained hosts (e.g. Render Free 512MB)
+            log.info("[case_id=%s] Running agent tasks sequentially (low_memory_mode=True)...", request.case_id)
+            results = []
+            for task in tasks:
+                res = await task
+                results.append(res)
+        else:
+            # Concurrent execution for unconstrained production environments
+            log.info("[case_id=%s] Running agent tasks concurrently (low_memory_mode=False)...", request.case_id)
+            results = await asyncio.gather(*tasks)
 
         # DEBUG LOGGING START
         log.info(
-            "[case_id=%s] asyncio.gather() finished in %.2f ms",
+            "[case_id=%s] Agent task execution finished in %.2f ms",
             request.case_id,
-            (time.perf_counter() - t_gather_start) * 1000,
+            (time.perf_counter() - t_tasks_start) * 1000,
         )
         # DEBUG LOGGING END
 

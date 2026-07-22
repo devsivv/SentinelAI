@@ -22,6 +22,9 @@ from typing import Optional
 import torch
 import torch.nn as nn
 
+# Constrain PyTorch to single-threaded CPU execution on memory-limited hosts (Render Free 512MB RAM)
+torch.set_num_threads(1)
+
 from .config import settings
 from .logging import get_logger
 
@@ -176,6 +179,9 @@ def get_model(path: Optional[Path] = None) -> nn.Module:
             # DEBUG LOGGING END
             try:
                 _model = _load_model(path)
+                import gc
+
+                gc.collect()
                 # DEBUG LOGGING START
                 elapsed = (time.perf_counter() - t_start) * 1000
                 log.info("Loaded Currency model successfully in %.2f ms", elapsed)

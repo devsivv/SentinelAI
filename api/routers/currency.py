@@ -26,8 +26,7 @@ async def analyze_currency(
     # Read the raw image bytes
     image_bytes = await image.read()
 
-    # Run prediction (this is synchronous; in a real high-throughput scenario
-    # we might use a threadpool, but for this refactor we call it directly)
+    # Run prediction
     result = predict(image_bytes, case_id=case_id)
 
     # Build the verdict dictionary

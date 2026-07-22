@@ -13,12 +13,18 @@ This module provides:
     Centralises values that were previously hardcoded (API version, CORS origins).
 """
 
-from __future__ import annotations
-
+import os
 from pathlib import Path
 
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings
+
+# Constrain OpenMP, MKL, OpenBLAS, and NumExpr to 1 thread to avoid memory spikes on multi-core containers
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+os.environ.setdefault("MKL_NUM_THREADS", "1")
+os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
+os.environ.setdefault("VECLIB_MAXIMUM_THREADS", "1")
+os.environ.setdefault("NUMEXPR_NUM_THREADS", "1")
 
 # Dynamically discover the project root assuming this file is in `core/`
 _CORE_DIR = Path(__file__).resolve().parent
@@ -76,6 +82,14 @@ class AppConfig(BaseSettings):
             "Override via DATABASE_URL in your .env file. "
             "The default placeholder will connect to a local dev DB; "
             "it is not a real credential and must be changed for any real deployment."
+        ),
+    )
+    low_memory_mode: bool = Field(
+        default=True,
+        description=(
+            "If True, orchestrator executes agent tasks sequentially to keep peak RAM "
+            "below 512MB on memory-constrained deployments (e.g. Render Free). "
+            "Set LOW_MEMORY_MODE=false in .env to enable full concurrent execution."
         ),
     )
 
