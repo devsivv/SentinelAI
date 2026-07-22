@@ -33,6 +33,7 @@ export default function CaseDetails() {
       .then((dbCase) => {
         if (!isMounted || !dbCase || !dbCase.fusion_report) return;
         setFusionData({
+          agent: 'fusion_agent',
           case_id: dbCase.case_id,
           final_verdict: dbCase.fusion_report.final_verdict || 'safe',
           overall_risk: dbCase.fusion_report.overall_risk || 0,
@@ -50,6 +51,7 @@ export default function CaseDetails() {
             };
             return acc;
           }, {}),
+          processed_at: dbCase.fusion_report.created_at || new Date().toISOString(),
         });
       })
       .catch(() => {
@@ -60,6 +62,8 @@ export default function CaseDetails() {
       isMounted = false;
     };
   }, [id]);
+
+  useEffect(() => {
     // Resolve details inside the effect using the stable id string.
     // Using [details] as dependency causes re-runs on every render because
     // the merged displayDetails object has a new reference each render cycle.

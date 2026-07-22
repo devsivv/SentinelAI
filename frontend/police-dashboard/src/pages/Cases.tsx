@@ -20,6 +20,7 @@ export default function Cases() {
           case_id: c.case_id,
           title: `${(c.investigation_type || 'Investigation').toUpperCase()} (${c.case_id.slice(0, 8)})`,
           victim_name: c.metadata?.victim_name || 'Reported Victim',
+          assigned_officer: c.metadata?.assigned_officer || 'Unassigned',
           status: 'Open',
           risk_level: (c.fusion_report?.overall_risk || 0) >= 70 ? 'Critical' : (c.fusion_report?.overall_risk || 0) >= 40 ? 'High' : 'Medium',
           created_at: c.created_at || new Date().toISOString(),
