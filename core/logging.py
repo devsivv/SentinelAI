@@ -119,3 +119,34 @@ def build_agent_logger(
     logger.propagate = False
 
     return logger
+
+
+import os
+import threading
+import psutil
+
+_mem_logger = logging.getLogger("memory")
+
+
+def log_memory(stage: str) -> None:
+    """Log psutil RSS memory in MB, active threads, and torch thread count if loaded."""
+    try:
+        process = psutil.Process(os.getpid())
+        rss_mb = process.memory_info().rss / (1024 * 1024)
+        active_threads = threading.active_count()
+
+        torch_info = ""
+        if "torch" in sys.modules:
+            try:
+                import torch
+
+                torch_info = f" | Torch Threads: {torch.get_num_threads()}"
+            except Exception:
+                pass
+
+        msg = f"[MEMORY] Stage: {stage} | RSS: {rss_mb:.2f} MB | Threads: {active_threads}{torch_info}"
+        _mem_logger.info(msg)
+        print(msg, flush=True)
+    except Exception as exc:
+        _mem_logger.warning("log_memory failed at stage '%s': %s", stage, exc)
+

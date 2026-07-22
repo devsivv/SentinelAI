@@ -20,7 +20,6 @@ from pathlib import Path
 from typing import Union
 
 import numpy as np
-import torch
 from PIL import Image, UnidentifiedImageError
 
 from .config import settings
@@ -118,6 +117,8 @@ def preprocess(source: ImageInput) -> tuple[torch.Tensor, tuple[int, int]]:
     arr = (arr - mean) / std  # broadcast over (H, W, 3)
 
     # HWC → CHW → add batch dimension: (H, W, 3) → (3, H, W) → (1, 3, H, W)
+    import torch
+
     tensor = torch.from_numpy(arr.transpose(2, 0, 1)).unsqueeze(0)
 
     log.debug(

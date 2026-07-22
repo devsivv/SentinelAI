@@ -43,6 +43,7 @@ from typing import Any
 
 import gc
 import joblib
+from core.logging import log_memory
 
 log = logging.getLogger("core.loader")
 
@@ -100,12 +101,14 @@ def load_joblib_model(
             try:
                 # DEBUG LOGGING START
                 t_start = time.perf_counter()
+                log_memory(f"Before {label} load")
                 log.info("Loading %s from '%s'...", label, path)
                 # DEBUG LOGGING END
                 cache_dict[cache_key] = joblib.load(str(path))
                 # Free unreferenced byte streams and JSON string buffers immediately after loading
                 gc.collect()
                 # DEBUG LOGGING START
+                log_memory(f"After {label} load")
                 elapsed = (time.perf_counter() - t_start) * 1000
                 log.info("Loaded %s successfully in %.2f ms", label, elapsed)
                 # DEBUG LOGGING END

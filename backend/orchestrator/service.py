@@ -35,6 +35,7 @@ from backend.repositories.agent_result_repository import AgentResultRepository
 from backend.repositories.case_repository import CaseRepository
 from backend.repositories.fusion_report_repository import FusionReportRepository
 from core.config import app_config
+from core.logging import log_memory
 
 log = logging.getLogger("orchestrator")
 
@@ -59,6 +60,7 @@ async def _process_case_internal(
 ) -> AggregatedRiskResponse:
     # DEBUG LOGGING START
     t_case_start = time.perf_counter()
+    log_memory("Before orchestrator starts")
     evidence_types = [item.input_type for item in request.evidence]
     log.info("START process_case")
     log.info("[case_id=%s] Received case with evidence types: %s", request.case_id, evidence_types)
@@ -195,6 +197,7 @@ async def _process_case_internal(
 
         # DEBUG LOGGING START
         log.info("[case_id=%s] Fusion starting...", request.case_id)
+        log_memory("Before Fusion")
         t_fusion_start = time.perf_counter()
         # DEBUG LOGGING END
 
@@ -202,6 +205,7 @@ async def _process_case_internal(
         fusion_verdict = aggregate_risk(valid_results)
 
         # DEBUG LOGGING START
+        log_memory("After Fusion")
         log.info(
             "[case_id=%s] Fusion completed in %.2f ms — verdict=%s",
             request.case_id,
@@ -461,10 +465,12 @@ async def _process_graph(case_id: str, payload: dict[str, Any]) -> AgentResult |
         )
         # DEBUG LOGGING START
         log.info("[case_id=%s] Graph analysis started...", case_id)
+        log_memory("Before Graph analysis")
         # DEBUG LOGGING END
         res = await analyze_graph(req)
 
         # DEBUG LOGGING START
+        log_memory("After Graph analysis")
         elapsed = (time.perf_counter() - t_start) * 1000
         log.info("[case_id=%s] Graph analysis finished in %.2f ms", case_id, elapsed)
         log.info("[case_id=%s] Graph analysis took %.2f ms", case_id, elapsed)

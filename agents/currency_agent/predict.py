@@ -19,9 +19,6 @@ import time
 from pathlib import Path
 from typing import Optional
 
-import torch
-import torch.nn.functional as F
-
 from .config import settings
 from .logging import get_logger
 from .model import load_class_names, run_inference
@@ -92,7 +89,10 @@ def predict(
     # ------------------------------------------------------------------
     # 3. Softmax → probabilities
     # ------------------------------------------------------------------
-    probs: torch.Tensor = F.softmax(logits, dim=1).squeeze(0)  # (num_classes,)
+    import torch
+    import torch.nn.functional as F
+
+    probs: Any = F.softmax(logits, dim=1).squeeze(0)  # (num_classes,)
 
     # ------------------------------------------------------------------
     # 4. Decode class labels

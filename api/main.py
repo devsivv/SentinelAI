@@ -9,17 +9,27 @@ All configuration (CORS origins, API version, host/port) is read from
 via environment variable or ``.env`` (see ``.env.example``).
 """
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.errors import register_exception_handlers
 from api.routers import cases, currency, fraud, geo, graph, health, investigate, scam
 from core.config import API_VERSION, app_config
+from core.logging import log_memory
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    log_memory("FastAPI startup complete")
+    yield
+
 
 app = FastAPI(
     title="SentinelAI API",
     description="Unified API gateway for SentinelAI Agents.",
     version=API_VERSION,
+    lifespan=lifespan,
 )
 
 app.add_middleware(

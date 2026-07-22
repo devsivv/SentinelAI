@@ -14,6 +14,7 @@ from backend.db.session import get_db
 from backend.fusion_agent.schemas import AggregatedRiskResponse
 from backend.orchestrator.schemas import InvestigateRequest
 from backend.orchestrator.service import process_case
+from core.logging import log_memory
 
 log = logging.getLogger("api.investigate")
 
@@ -71,6 +72,7 @@ async def investigate_case(
     """
     # DEBUG LOGGING START
     t_start = time.perf_counter()
+    log_memory("Router receives /investigate")
     evidence_types = [e.input_type for e in request.evidence]
     log.info(
         "[case_id=%s] Request received: %d evidence items %s",
@@ -92,6 +94,7 @@ async def investigate_case(
             request.case_id,
             elapsed_ms,
         )
+        log_memory("Before response return")
         # DEBUG LOGGING END
         return result
     except Exception as exc:

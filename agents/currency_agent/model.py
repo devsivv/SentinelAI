@@ -17,13 +17,7 @@ from __future__ import annotations
 import json
 import threading
 from pathlib import Path
-from typing import Optional
-
-import torch
-import torch.nn as nn
-
-# Constrain PyTorch to single-threaded CPU execution on memory-limited hosts (Render Free 512MB RAM)
-torch.set_num_threads(1)
+from typing import Any, Optional
 
 from .config import settings
 from .logging import get_logger
@@ -35,7 +29,7 @@ log = get_logger()
 # ---------------------------------------------------------------------------
 
 _lock = threading.Lock()
-_model: Optional[nn.Module] = None
+_model: Any = None
 _class_names: Optional[dict[str, str]] = None  # {"0": "fake", "1": "real", ...}
 
 
@@ -93,11 +87,15 @@ def load_class_names(path: Optional[Path] = None) -> dict[str, str]:
 # ---------------------------------------------------------------------------
 
 
-def _load_model(path: Optional[Path] = None) -> nn.Module:
+def _load_model(path: Optional[Path] = None) -> Any:
     """Internal loader — always returns a new model instance (not cached here).
 
     The public API is ``get_model()`` which wraps this with a singleton lock.
     """
+    import torch
+
+    torch.set_num_threads(1)
+
     resolved = path or settings.model_path
     if not resolved.exists():
         raise FileNotFoundError(
@@ -122,12 +120,14 @@ def _load_model(path: Optional[Path] = None) -> nn.Module:
     return model
 
 
-def _load_from_state_dict(path: Path) -> nn.Module:
+def _load_from_state_dict(path: Path) -> Any:
     """Load a MobileNetV2 model from a raw state-dict checkpoint.
 
     This handles the case where the notebook saved the model with
     ``torch.save(model.state_dict(), ...)``.
     """
+    import torch
+    import torch.nn as nn
     import torchvision.models as tv_models
 
     num_classes = len(load_class_names())
@@ -151,7 +151,7 @@ def _load_from_state_dict(path: Path) -> nn.Module:
 import time
 
 
-def get_model(path: Optional[Path] = None) -> nn.Module:
+def get_model(path: Optional[Path] = None) -> Any:
     """Return the singleton model, loading it on first call.
 
     Thread-safe: concurrent callers block until the first load completes.
@@ -163,7 +163,7 @@ def get_model(path: Optional[Path] = None) -> nn.Module:
 
     Returns
     -------
-    ``torch.nn.Module`` in eval mode on CPU.
+    Model instance in eval mode on CPU.
     """
     global _model  # noqa: PLW0603
 
@@ -214,37 +214,19 @@ def reset_model_cache() -> None:
 
 
 def run_inference(
-    tensor: torch.Tensor,
+    tensor: Any,
     model_path: Optional[Path] = None,
-) -> torch.Tensor:
-    """Run a forward pass and return **raw logits**.
+) -> Any:
+    """Run a forward pass and return **raw logits**."""
+    import torch
 
-    Parameters
-    ----------
-    tensor:
-        Preprocessed input tensor of shape ``(1, 3, H, W)``, float32, on CPU.
-    model_path:
-        Override the model path from settings (used in tests to force
-        a specific file path, e.g. a non-existent path to test error handling).
-
-    Returns
-    -------
-    ``torch.Tensor`` of shape ``(1, num_classes)`` — raw (un-normalised) logits.
-
-    Raises
-    ------
-    FileNotFoundError
-        If ``model_path`` does not exist on disk.
-    RuntimeError
-        If the forward pass fails (shape mismatch, CUDA OOM, etc.).
-    """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     tensor = tensor.to(device)
     model = get_model(model_path)
 
     with torch.no_grad():
         try:
-            logits: torch.Tensor = model(tensor)
+            logits: Any = model(tensor)
         except Exception as exc:
             log.exception("Forward pass failed: %s", exc)
             raise RuntimeError(f"Model inference failed: {exc}") from exc

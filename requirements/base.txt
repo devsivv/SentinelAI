@@ -10,6 +10,7 @@ python-multipart
 networkx
 python-dateutil
 tqdm
+psutil
 
 # Database — Sprint 09 (Phase 1.1)
 sqlalchemy>=2.0
