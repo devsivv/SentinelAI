@@ -1,4 +1,4 @@
-import { ShieldAlert } from 'lucide-react';
+import { Lightbulb, CheckCircle2 } from 'lucide-react';
 
 interface RecommendedActionsProps {
   actions: string[];
@@ -10,18 +10,16 @@ export default function RecommendedActions({ actions }: RecommendedActionsProps)
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+    <div className="glass-card p-6 sm:p-8 bg-gradient-to-br from-blue-950/40 to-slate-900/60 border border-blue-500/20 rounded-2xl">
       <div className="flex items-center gap-2 mb-4">
-        <ShieldAlert className="w-5 h-5 text-indigo-600" />
-        <h3 className="text-lg font-medium text-gray-900">Recommended Actions</h3>
+        <Lightbulb className="w-5 h-5 text-blue-400 shrink-0" aria-hidden="true" />
+        <h3 className="text-lg font-bold text-white">Recommended Actions</h3>
       </div>
-      <ul className="space-y-3">
+      <ul className="space-y-3" role="list">
         {actions.map((action, index) => (
-          <li key={index} className="flex items-start">
-            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm font-medium mr-3">
-              {index + 1}
-            </span>
-            <span className="text-gray-700 mt-0.5">{action}</span>
+          <li key={index} className="flex items-start gap-3 bg-[#0F172A]/80 p-3.5 rounded-xl border border-white/10">
+            <CheckCircle2 className="h-5 w-5 text-blue-400 shrink-0 mt-0.5" aria-hidden="true" />
+            <span className="text-sm text-gray-200 leading-relaxed flex-1 min-w-0">{action}</span>
           </li>
         ))}
       </ul>
