@@ -58,10 +58,9 @@ const highRiskIcon = createMarkerIcon('#ef4444', '!');
 const medRiskIcon = createMarkerIcon('#f59e0b', '•');
 const lowRiskIcon = createMarkerIcon('#10b981', '✓');
 
-// Helper component to re-center map dynamically when target changes
 function ChangeView({ center }: { center: [number, number] }) {
   const map = useMap();
-  map.setView(center, map.getZoom());
+  map.setView(center, 13);
   return null;
 }
 
@@ -75,7 +74,6 @@ export default function GeoIntelligencePanel({
   const [showClusters, setShowClusters] = useState(false);
   const [selectedIncident, setSelectedIncident] = useState<GeoIncident | null>(null);
 
-  // Extract center coordinates or fallback to Bengaluru center
   const centerCoords: [number, number] = useMemo(() => {
     if (geoData?.input_coords && geoData.input_coords.length === 2) {
       return [geoData.input_coords[0], geoData.input_coords[1]];
@@ -85,75 +83,75 @@ export default function GeoIntelligencePanel({
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent mb-3"></div>
-        <p className="text-sm font-medium text-gray-600">Loading spatial geographical intelligence...</p>
+      <div className="glass-card border border-white/10 rounded-2xl bg-[#111827]/70 p-12 text-center shadow-xl">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent mb-3"></div>
+        <p className="text-sm font-semibold text-white">Loading Geospatial Intelligence Map…</p>
       </div>
     );
   }
 
   if (!geoData) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center">
-        <MapPin className="h-10 w-10 text-gray-400 mx-auto mb-2" />
-        <h4 className="text-base font-semibold text-gray-900 mb-1">No Geographical Evidence</h4>
-        <p className="text-sm text-gray-500 max-w-md mx-auto">
-          No location coordinates or spatial evidence items were included in this case. Attach a location payload to trigger the Geo Intelligence Agent.
+      <div className="glass-card border border-white/10 rounded-2xl bg-[#111827]/70 p-8 sm:p-10 text-center shadow-xl">
+        <div className="mx-auto w-12 h-12 rounded-full bg-slate-900/80 border border-slate-800 flex items-center justify-center text-gray-400 mb-3">
+          <Compass className="h-6 w-6" aria-hidden="true" />
+        </div>
+        <h3 className="text-base font-bold text-white mb-1">Geospatial Intelligence Unavailable</h3>
+        <p className="text-sm text-gray-400 max-w-sm mx-auto leading-relaxed">
+          No location coordinates were provided with this case evidence payload.
         </p>
       </div>
     );
   }
 
   const {
-    district,
-    state,
-    nearby_incidents_count,
+    district = 'Bengaluru Urban',
+    state = 'Karnataka',
+    nearby_incidents_count = 0,
     nearby_incidents = [],
-    relative_crime_density = 0,
+    relative_crime_density = 0.0,
     hotspots = [],
     clusters = [],
-    patrol_recommendations,
+    patrol_recommendations = null,
   } = geoData;
 
-  const getRiskBadgeColor = (priority?: string) => {
-    switch (priority?.toLowerCase()) {
+  const getRiskBadgeColor = (verdict: string) => {
+    switch (verdict.toLowerCase()) {
+      case 'critical':
       case 'high':
       case 'fraud':
-        return 'bg-red-100 text-red-800 border-red-200';
+        return 'bg-red-500/20 text-red-300 border-red-500/30';
       case 'medium':
       case 'suspicious':
-        return 'bg-amber-100 text-amber-800 border-amber-200';
+        return 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+      case 'low':
+      case 'clean':
+      case 'safe':
+        return 'bg-green-500/20 text-green-300 border-green-500/30';
       default:
-        return 'bg-green-100 text-green-800 border-green-200';
+        return 'bg-gray-800 text-gray-400 border-gray-700';
     }
   };
 
   return (
-    <div className="bg-white shadow-sm ring-1 ring-black ring-opacity-5 rounded-lg overflow-hidden space-y-0">
-      {/* 1. Header & Controls Bar */}
-      <div className="px-4 sm:px-6 py-4 bg-gray-50 border-b border-gray-200 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-100 text-blue-700 rounded-lg shrink-0">
-            <Compass className="h-5 w-5" />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 leading-tight">
-              Geographical Intelligence & Hotspot Analysis
-            </h3>
-            <p className="text-xs text-gray-500">
-              Spatial crime density, spatial clusters, and automated patrol routing heuristics
-            </p>
-          </div>
+    <div className="glass-card border border-white/10 rounded-2xl overflow-hidden bg-[#111827]/70 backdrop-blur-md shadow-xl text-white">
+      {/* 1. Header Bar */}
+      <div className="px-4 sm:px-6 py-4 border-b border-white/10 bg-[#080E1A] flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <MapPin className="h-5 w-5 text-blue-400 shrink-0" aria-hidden="true" />
+          <h3 className="text-base sm:text-lg font-bold leading-6 text-white break-words">
+            Geospatial Threat Map & Crime Density Analysis
+          </h3>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
           {/* Toggles */}
           <button
             onClick={() => setShowDensityOverlay(!showDensityOverlay)}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border transition-colors cursor-pointer ${
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
               showDensityOverlay
-                ? 'bg-amber-50 text-amber-700 border-amber-300 shadow-sm'
-                : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                ? 'bg-amber-500/20 text-amber-300 border-amber-500/30 shadow-sm'
+                : 'bg-[#0F172A] text-gray-400 border-white/10 hover:text-white'
             }`}
           >
             <Flame className="h-3.5 w-3.5" />
@@ -162,10 +160,10 @@ export default function GeoIntelligencePanel({
 
           <button
             onClick={() => setShowClusters(!showClusters)}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border transition-colors cursor-pointer ${
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
               showClusters
-                ? 'bg-blue-50 text-blue-700 border-blue-300 shadow-sm'
-                : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                ? 'bg-blue-500/20 text-blue-300 border-blue-500/30 shadow-sm'
+                : 'bg-[#0F172A] text-gray-400 border-white/10 hover:text-white'
             }`}
           >
             <Layers className="h-3.5 w-3.5" />
@@ -173,7 +171,7 @@ export default function GeoIntelligencePanel({
           </button>
 
           <span
-            className={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold border ${getRiskBadgeColor(
+            className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase border ${getRiskBadgeColor(
               agentVerdict
             )}`}
           >
@@ -182,9 +180,9 @@ export default function GeoIntelligencePanel({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-gray-200">
+      <div className="grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-white/10">
         {/* 2. Interactive Leaflet Map (2 Cols) */}
-        <div className="lg:col-span-2 relative h-56 sm:h-72 md:h-[420px] bg-gray-100 flex flex-col">
+        <div className="lg:col-span-2 relative h-64 sm:h-80 md:h-[440px] bg-[#0F172A] flex flex-col">
           <MapContainer
             center={centerCoords}
             zoom={13}
@@ -220,10 +218,9 @@ export default function GeoIntelligencePanel({
             {/* Hotspot & Density Circles Overlay */}
             {showDensityOverlay && (
               <>
-                {/* General density circle around target */}
                 <Circle
                   center={centerCoords}
-                  radius={5000} // 5 km default radius
+                  radius={5000}
                   pathOptions={{
                     color: '#f59e0b',
                     fillColor: '#f59e0b',
@@ -231,7 +228,6 @@ export default function GeoIntelligencePanel({
                     dashArray: '4, 4',
                   }}
                 />
-                {/* Specific detected hotspots */}
                 {hotspots.map((hs, idx) => (
                   <Circle
                     key={idx}
@@ -317,64 +313,64 @@ export default function GeoIntelligencePanel({
           </MapContainer>
 
           {/* Map Legend Overlay */}
-          <div className="absolute bottom-3 left-3 z-10 bg-white/95 backdrop-blur-sm p-3 rounded-lg shadow-md border border-gray-200 text-xs space-y-1.5">
-            <div className="font-semibold text-gray-900 mb-1 border-b border-gray-200 pb-1">
+          <div className="absolute bottom-3 left-3 z-10 bg-[#0F172A]/90 backdrop-blur-md p-3 rounded-xl shadow-lg border border-white/10 text-xs space-y-1.5 text-white">
+            <div className="font-bold text-white mb-1 border-b border-white/10 pb-1">
               Spatial Risk Legend
             </div>
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-blue-600 border border-white inline-block"></span>
-              <span className="text-gray-700">Target Location</span>
+              <span className="text-gray-300">Target Location</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-red-500 border border-white inline-block"></span>
-              <span className="text-gray-700">High Risk / Fraud</span>
+              <span className="text-gray-300">High Risk / Fraud</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-amber-500 border border-white inline-block"></span>
-              <span className="text-gray-700">Medium Risk / Scam</span>
+              <span className="text-gray-300">Medium Risk / Scam</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-emerald-500 border border-white inline-block"></span>
-              <span className="text-gray-700">Low Risk / Safe</span>
+              <span className="text-gray-300">Low Risk / Safe</span>
             </div>
           </div>
         </div>
 
         {/* 3. Metrics & Information Side Column (1 Col) */}
-        <div className="lg:col-span-1 p-4 sm:p-6 space-y-6 overflow-y-auto lg:max-h-[420px]">
+        <div className="lg:col-span-1 p-4 sm:p-6 space-y-6 overflow-y-auto lg:max-h-[440px]">
           {/* District Summary Panel */}
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3 flex items-center gap-1.5">
-              <Navigation className="h-4 w-4 text-blue-600" />
+            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 flex items-center gap-1.5">
+              <Navigation className="h-4 w-4 text-blue-400" />
               District Overview
             </h4>
 
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3">
+            <div className="bg-[#0F172A] p-4 rounded-xl border border-white/10 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">District & State</span>
-                <span className="text-xs font-semibold text-gray-900">
+                <span className="text-xs text-gray-400">District & State</span>
+                <span className="text-xs font-bold text-white">
                   {district}, {state}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">Nearby Incidents</span>
-                <span className="text-xs font-bold text-gray-900 bg-white px-2 py-0.5 rounded border border-gray-200">
+                <span className="text-xs text-gray-400">Nearby Incidents</span>
+                <span className="text-xs font-bold text-white bg-blue-600/20 px-2 py-0.5 rounded border border-blue-500/30">
                   {nearby_incidents_count}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">Crime Density</span>
-                <span className="text-xs font-mono font-medium text-gray-900">
+                <span className="text-xs text-gray-400">Crime Density</span>
+                <span className="text-xs font-mono font-bold text-white">
                   {relative_crime_density.toFixed(4)} / km²
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">Hotspot Status</span>
+                <span className="text-xs text-gray-400">Hotspot Status</span>
                 <span
-                  className={`text-xs font-semibold px-2 py-0.5 rounded border ${
+                  className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${
                     hotspots.length > 0
-                      ? 'bg-red-50 text-red-700 border-red-200'
-                      : 'bg-green-50 text-green-700 border-green-200'
+                      ? 'bg-red-500/20 text-red-300 border-red-500/30'
+                      : 'bg-green-500/20 text-green-300 border-green-500/30'
                   }`}
                 >
                   {hotspots.length > 0 ? 'Active Hotspot Zone' : 'Standard Density'}
@@ -386,16 +382,16 @@ export default function GeoIntelligencePanel({
           {/* Patrol Recommendation Card */}
           {patrol_recommendations && (
             <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3 flex items-center gap-1.5">
-                <ShieldAlert className="h-4 w-4 text-amber-600" />
+              <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 flex items-center gap-1.5">
+                <ShieldAlert className="h-4 w-4 text-amber-400" />
                 Patrol Recommendation
               </h4>
 
-              <div className="bg-amber-50/60 p-4 rounded-lg border border-amber-200 space-y-3">
+              <div className="bg-gradient-to-br from-amber-950/30 to-slate-900/60 p-4 rounded-xl border border-amber-500/30 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-amber-900">Patrol Priority</span>
+                  <span className="text-xs font-semibold text-amber-200">Patrol Priority</span>
                   <span
-                    className={`text-xs font-bold uppercase px-2 py-0.5 rounded border ${getRiskBadgeColor(
+                    className={`text-xs font-bold uppercase px-2.5 py-0.5 rounded-full border ${getRiskBadgeColor(
                       patrol_recommendations.priority
                     )}`}
                   >
@@ -404,22 +400,22 @@ export default function GeoIntelligencePanel({
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-amber-900">Suggested Frequency</span>
-                  <span className="text-xs font-semibold text-amber-950 bg-white px-2 py-0.5 rounded border border-amber-200 capitalize">
+                  <span className="text-xs font-semibold text-amber-200">Suggested Frequency</span>
+                  <span className="text-xs font-bold text-amber-300 bg-[#0F172A] px-2 py-0.5 rounded-md border border-amber-500/30 capitalize">
                     {patrol_recommendations.patrol_frequency}
                   </span>
                 </div>
 
                 {patrol_recommendations.suggested_hubs?.length > 0 && (
                   <div>
-                    <span className="text-xs font-medium text-amber-900 block mb-1.5">
+                    <span className="text-xs font-semibold text-amber-200 block mb-1.5">
                       Suggested Focus Hubs
                     </span>
                     <div className="flex flex-wrap gap-1.5">
                       {patrol_recommendations.suggested_hubs.map((hub, i) => (
                         <span
                           key={i}
-                          className="text-[11px] font-mono bg-white text-amber-900 px-2 py-0.5 rounded border border-amber-300"
+                          className="text-[11px] font-mono bg-[#0F172A] text-amber-300 px-2 py-0.5 rounded-md border border-amber-500/30"
                         >
                           {hub}
                         </span>
@@ -428,7 +424,7 @@ export default function GeoIntelligencePanel({
                   </div>
                 )}
 
-                <p className="text-xs text-amber-900/90 leading-relaxed bg-white/80 p-2.5 rounded border border-amber-200/80 mt-1">
+                <p className="text-xs text-amber-200 leading-relaxed bg-[#0F172A]/80 p-3 rounded-xl border border-amber-500/20 mt-1">
                   {patrol_recommendations.narrative}
                 </p>
               </div>
@@ -437,13 +433,13 @@ export default function GeoIntelligencePanel({
 
           {/* Nearby Incidents List */}
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3 flex items-center justify-between">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 flex items-center justify-between">
               <span>Nearby Historical Incidents</span>
-              <span className="text-[11px] font-normal text-gray-400">Sorted by distance</span>
+              <span className="text-[11px] font-normal text-gray-500">Sorted by distance</span>
             </h4>
 
             {nearby_incidents.length === 0 ? (
-              <div className="text-xs text-gray-500 p-3 bg-gray-50 rounded border border-gray-200 text-center">
+              <div className="text-xs text-gray-400 p-3.5 bg-[#0F172A] rounded-xl border border-white/10 text-center">
                 No incidents recorded within search radius.
               </div>
             ) : (
@@ -452,21 +448,21 @@ export default function GeoIntelligencePanel({
                   <div
                     key={inc.id}
                     onClick={() => setSelectedIncident(inc)}
-                    className={`p-3 rounded-lg border text-xs cursor-pointer transition-colors ${
+                    className={`p-3 rounded-xl border text-xs cursor-pointer transition-colors ${
                       selectedIncident?.id === inc.id
-                        ? 'bg-blue-50 border-blue-300 ring-1 ring-blue-300'
-                        : 'bg-white hover:bg-gray-50 border-gray-200'
+                        ? 'bg-blue-600/20 border-blue-500/50 ring-1 ring-blue-500/50'
+                        : 'bg-[#0F172A] hover:bg-blue-600/10 border-white/10'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-gray-900">{inc.id}</span>
-                      <span className="font-mono text-[11px] text-blue-600 font-medium bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">
+                      <span className="font-bold text-white">{inc.id}</span>
+                      <span className="font-mono text-[11px] text-blue-300 font-bold bg-blue-600/20 px-1.5 py-0.5 rounded border border-blue-500/30">
                         {inc.distance_km != null ? `${inc.distance_km.toFixed(2)} km` : 'N/A'}
                       </span>
                     </div>
-                    <div className="text-gray-600 flex items-center justify-between">
+                    <div className="text-gray-400 flex items-center justify-between">
                       <span className="capitalize">{inc.category.replace('_', ' ')}</span>
-                      <span className="text-[10px] text-gray-400">
+                      <span className="text-[10px] text-gray-500">
                         {new Date(inc.timestamp).toLocaleDateString()}
                       </span>
                     </div>

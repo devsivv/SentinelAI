@@ -15,22 +15,22 @@ const navItems = [
 ];
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-  `flex items-center rounded-md px-3 py-2.5 text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 min-h-[44px] ${
+  `flex items-center rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 min-h-[44px] ${
     isActive
-      ? 'bg-blue-600 text-white shadow-sm'
-      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+      ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40'
+      : 'text-gray-300 hover:bg-white/5 hover:text-white'
   }`;
 
 function SidebarContent({ onClose }: { onClose: () => void }) {
   return (
-    <div className="flex h-full w-64 flex-col bg-slate-900 text-slate-300">
+    <div className="flex h-full w-64 flex-col bg-[#0B1220] border-r border-white/10 text-gray-300">
       {/* Brand header */}
-      <div className="flex h-16 items-center justify-between px-5 bg-slate-950 shrink-0 border-b border-slate-800">
+      <div className="flex h-16 items-center justify-between px-5 bg-[#080E1A] shrink-0 border-b border-white/10">
         <SentinelAILogo size="md" showIcon subtitle="Police Workspace" />
         {/* Close button — only visible on mobile */}
         <button
           onClick={onClose}
-          className="lg:hidden p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-colors"
+          className="lg:hidden p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-colors"
           aria-label="Close navigation menu"
         >
           <X className="h-5 w-5" aria-hidden="true" />
@@ -38,7 +38,7 @@ function SidebarContent({ onClose }: { onClose: () => void }) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 px-4 py-6" aria-label="Main navigation">
+      <nav className="flex-1 space-y-1.5 px-4 py-6" aria-label="Main navigation">
         {navItems.map((item) => (
           <NavLink
             key={item.name}
@@ -54,11 +54,11 @@ function SidebarContent({ onClose }: { onClose: () => void }) {
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-slate-800 shrink-0">
-        <p className="text-xs text-slate-400 text-center font-medium">
+      <div className="p-4 border-t border-white/10 shrink-0 bg-[#080E1A]">
+        <p className="text-xs text-gray-300 text-center font-medium">
           Built by Team Riyal Intelligence
         </p>
-        <p className="text-[10px] text-slate-500 text-center mt-0.5">
+        <p className="text-[10px] text-gray-500 text-center mt-0.5">
           ET AI Hackathon &bull; &copy; 2026 SentinelAI
         </p>
       </div>
@@ -89,7 +89,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       {/* ── Mobile: off-canvas overlay drawer ── */}
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-40 bg-slate-900/60 transition-opacity duration-300 lg:hidden ${
+        className={`fixed inset-0 z-40 bg-[#0B1220]/80 backdrop-blur-md transition-opacity duration-300 lg:hidden ${
           isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
         aria-hidden="true"

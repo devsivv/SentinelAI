@@ -6,10 +6,10 @@ interface RecommendedActionsProps {
 
 export default function RecommendedActions({ actions }: RecommendedActionsProps) {
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 shadow-sm ring-1 ring-blue-100 rounded-lg p-4 sm:p-6">
+    <div className="glass-card bg-gradient-to-br from-blue-950/40 to-slate-900/60 border border-blue-500/20 rounded-2xl p-4 sm:p-6 shadow-xl">
       <div className="flex items-center gap-2 mb-4">
-        <Lightbulb className="h-5 w-5 text-blue-600 flex-shrink-0" aria-hidden="true" />
-        <h3 className="text-base sm:text-lg font-semibold leading-6 text-blue-900">
+        <Lightbulb className="h-5 w-5 text-blue-400 shrink-0" aria-hidden="true" />
+        <h3 className="text-base sm:text-lg font-bold leading-6 text-white">
           Recommended Actions
         </h3>
       </div>
@@ -19,10 +19,10 @@ export default function RecommendedActions({ actions }: RecommendedActionsProps)
           {actions.map((action, index) => (
             <li
               key={index}
-              className="flex items-start gap-3 bg-white/60 p-3 rounded-md border border-blue-100 shadow-sm"
+              className="flex items-start gap-3 bg-[#0F172A] p-3.5 rounded-xl border border-white/10"
             >
-              <CheckCircle2 className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" aria-hidden="true" />
-              <span className="text-sm text-gray-800 leading-relaxed break-words flex-1 min-w-0">
+              <CheckCircle2 className="h-5 w-5 text-blue-400 shrink-0 mt-0.5" aria-hidden="true" />
+              <span className="text-sm text-gray-200 leading-relaxed break-words flex-1 min-w-0">
                 {action}
               </span>
             </li>
@@ -30,9 +30,9 @@ export default function RecommendedActions({ actions }: RecommendedActionsProps)
         </ul>
       ) : (
         <div className="flex flex-col items-center justify-center py-6 text-center">
-          <Lightbulb className="h-6 w-6 text-blue-300 mb-2" aria-hidden="true" />
-          <p className="text-sm font-medium text-blue-800 mb-0.5">No actions recommended yet</p>
-          <p className="text-xs text-blue-600/70">
+          <Lightbulb className="h-6 w-6 text-blue-400/60 mb-2" aria-hidden="true" />
+          <p className="text-sm font-bold text-white mb-0.5">No actions recommended yet</p>
+          <p className="text-xs text-gray-400">
             Run a live analysis to generate investigative action recommendations.
           </p>
         </div>

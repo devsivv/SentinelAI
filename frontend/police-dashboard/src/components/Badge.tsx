@@ -10,32 +10,32 @@ export default function Badge({ type, value }: BadgeProps) {
     if (type === 'status') {
       switch (value as CaseStatus) {
         case 'Open':
-          return 'bg-blue-50 text-blue-700 ring-blue-700/10';
+          return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
         case 'Under Review':
-          return 'bg-amber-50 text-amber-800 ring-amber-600/20';
+          return 'bg-amber-500/20 text-amber-300 border-amber-500/30';
         case 'Closed':
-          return 'bg-gray-50 text-gray-600 ring-gray-500/10';
+          return 'bg-gray-800 text-gray-400 border-gray-700';
         default:
-          return 'bg-gray-50 text-gray-600 ring-gray-500/10';
+          return 'bg-gray-800 text-gray-400 border-gray-700';
       }
     } else {
       switch (value as RiskLevel) {
         case 'Low':
-          return 'bg-green-50 text-green-700 ring-green-600/20';
+          return 'bg-green-500/20 text-green-300 border-green-500/30';
         case 'Medium':
-          return 'bg-yellow-50 text-yellow-800 ring-yellow-600/20';
+          return 'bg-amber-500/20 text-amber-300 border-amber-500/30';
         case 'High':
-          return 'bg-orange-50 text-orange-700 ring-orange-600/20';
+          return 'bg-orange-500/20 text-orange-300 border-orange-500/30';
         case 'Critical':
-          return 'bg-red-50 text-red-700 ring-red-600/10';
+          return 'bg-red-500/20 text-red-300 border-red-500/30';
         default:
-          return 'bg-gray-50 text-gray-600 ring-gray-500/10';
+          return 'bg-gray-800 text-gray-400 border-gray-700';
       }
     }
   };
 
   return (
-    <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${getStyles()}`}>
+    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider border whitespace-nowrap ${getStyles()}`}>
       {value}
     </span>
   );

@@ -416,45 +416,45 @@ export default function CaseDetails() {
         <div className="mb-4">
           <Link
             to="/cases"
-            className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 rounded-sm"
+            className="inline-flex items-center text-sm font-semibold text-blue-400 hover:text-blue-300 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg min-h-[44px]"
           >
             <ArrowLeft className="mr-1.5 h-4 w-4" aria-hidden="true" /> Back to Cases
           </Link>
         </div>
 
-        <div className="bg-white shadow-sm ring-1 ring-black ring-opacity-5 rounded-lg p-4 sm:p-6">
+        <div className="glass-card p-4 sm:p-6 bg-[#111827]/70 border border-white/10 rounded-2xl backdrop-blur-md shadow-xl text-white">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             {/* Left: title + case ID + victim */}
             <div className="flex-1 min-w-0">
-              <div className="flex flex-wrap items-start gap-2 mb-1">
-                <h2 className="text-lg sm:text-2xl font-bold leading-7 text-gray-900 break-words min-w-0">
+              <div className="flex flex-wrap items-start gap-2 mb-1.5">
+                <h2 className="text-lg sm:text-2xl font-extrabold leading-7 text-white break-words min-w-0">
                   {displayDetails.title}
                 </h2>
-                <span className="text-xs font-mono text-gray-500 bg-gray-100 px-2 py-0.5 rounded border border-gray-200 break-all shrink-0 self-start mt-0.5">
+                <span className="text-xs font-mono font-bold text-blue-300 bg-[#0F172A] px-2.5 py-1 rounded-lg border border-white/10 break-all shrink-0 self-start mt-0.5">
                   {displayDetails.case_id}
                 </span>
               </div>
-              <p className="text-sm text-gray-500 break-words">
+              <p className="text-sm text-gray-300 break-words">
                 Victim:{' '}
-                <span className="font-medium text-gray-900">{displayDetails.victim_name}</span>
+                <span className="font-bold text-white">{displayDetails.victim_name}</span>
                 {' '}&bull;{' '}
                 Assigned:{' '}
-                <span className="font-medium text-gray-900">{displayDetails.assigned_officer}</span>
+                <span className="font-bold text-white">{displayDetails.assigned_officer}</span>
               </p>
             </div>
 
             {/* Right: badges + button + dates */}
-            <div className="flex flex-col items-start sm:items-end gap-2 shrink-0">
+            <div className="flex flex-col items-start sm:items-end gap-2.5 shrink-0">
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   onClick={handleRunReanalysis}
                   disabled={isReanalyzing}
-                  className="inline-flex items-center justify-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50 transition-colors cursor-pointer min-h-[44px]"
+                  className="inline-flex items-center justify-center px-4 py-2 border border-blue-500/30 text-xs font-bold rounded-xl shadow-lg shadow-blue-900/40 text-white bg-blue-600 hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50 transition-all cursor-pointer min-h-[44px]"
                   aria-label="Re-run live multi-agent investigation"
                   title="Re-run multi-agent investigation on live backend"
                 >
                   <RefreshCw
-                    className={`mr-1.5 h-3.5 w-3.5 text-gray-500 ${isReanalyzing ? 'animate-spin' : ''}`}
+                    className={`mr-1.5 h-3.5 w-3.5 text-white ${isReanalyzing ? 'animate-spin' : ''}`}
                     aria-hidden="true"
                   />
                   {isReanalyzing ? 'Analyzing…' : 'Run Live Analysis'}
@@ -462,7 +462,7 @@ export default function CaseDetails() {
                 <Badge type="status" value={displayDetails.status} />
                 <Badge type="risk" value={displayDetails.risk_level} />
               </div>
-              <div className="text-xs text-gray-500 flex flex-col sm:items-end gap-0.5">
+              <div className="text-xs text-gray-400 flex flex-col sm:items-end gap-0.5">
                 <div>Created: {new Date(displayDetails.created_at).toLocaleString()}</div>
                 <div>Updated: {new Date(displayDetails.updated_at).toLocaleString()}</div>
               </div>
@@ -491,7 +491,7 @@ export default function CaseDetails() {
 
       {/* Loading state */}
       {(isLoading || isReanalyzing) && (
-        <div className="flex justify-center p-12 bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="glass-card flex justify-center p-12 bg-[#111827]/70 border border-white/10 rounded-2xl shadow-xl">
           <LoadingSpinner
             message={isReanalyzing ? 'Running live multi-agent analysis…' : 'Loading case details…'}
           />
@@ -506,7 +506,7 @@ export default function CaseDetails() {
 
           {/* 3. Agent Results — 1 col mobile, 2 col tablet, 3 col desktop */}
           <div>
-            <h3 className="text-base sm:text-lg font-semibold leading-6 text-gray-900 mb-3 sm:mb-4">Agent Results</h3>
+            <h3 className="text-base sm:text-lg font-bold leading-6 text-white mb-3 sm:mb-4">Agent Results</h3>
             {displayDetails.agent_results.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {displayDetails.agent_results.map((result, idx) => (
@@ -514,12 +514,12 @@ export default function CaseDetails() {
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white p-8 text-center">
-                <div className="mb-3 p-3 bg-gray-100 rounded-full">
-                  <Activity className="h-6 w-6 text-gray-400" aria-hidden="true" />
+              <div className="glass-card flex flex-col items-center justify-center rounded-2xl border border-white/10 bg-[#111827]/70 backdrop-blur-md p-8 text-center shadow-xl">
+                <div className="mb-3 p-3 bg-slate-900/80 border border-slate-800 rounded-full">
+                  <Activity className="h-6 w-6 text-blue-400" aria-hidden="true" />
                 </div>
-                <p className="text-sm font-medium text-gray-700 mb-1">No agent analysis available</p>
-                <p className="text-xs text-gray-500">
+                <p className="text-sm font-bold text-white mb-1">No agent analysis available</p>
+                <p className="text-xs text-gray-400">
                   Run a live analysis to see results from the SMS, URL, Transaction, and Graph agents.
                 </p>
               </div>

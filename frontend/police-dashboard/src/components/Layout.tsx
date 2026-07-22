@@ -11,15 +11,15 @@ export default function Layout() {
   const closeSidebar = useCallback(() => setSidebarOpen(false), []);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-[#0B1220] text-white">
       {/* Sidebar — fixed on lg, off-canvas drawer on smaller screens */}
       <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
 
       {/* Main content area */}
-      <div className="flex flex-1 flex-col overflow-hidden min-w-0">
+      <div className="flex flex-1 flex-col overflow-hidden min-w-0 bg-[#0B1220]">
         <Header onMenuClick={openSidebar} />
         <main
-          className="flex-1 overflow-y-auto flex flex-col justify-between"
+          className="flex-1 overflow-y-auto flex flex-col justify-between bg-[#0B1220]"
           id="main-content"
           aria-label="Main content"
         >

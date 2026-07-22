@@ -10,7 +10,7 @@ interface HeaderProps {
 export default function Header({ onMenuClick }: HeaderProps) {
   return (
     <header
-      className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 sm:px-6 shadow-sm gap-2"
+      className="flex h-16 shrink-0 items-center justify-between border-b border-white/10 bg-[#0B1220]/90 backdrop-blur-md px-4 sm:px-6 gap-2 text-white"
       role="banner"
     >
       {/* Left: hamburger — mobile/tablet only */}
@@ -18,7 +18,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
         <button
           type="button"
           onClick={onMenuClick}
-          className="inline-flex items-center justify-center h-11 w-11 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-colors"
+          className="inline-flex items-center justify-center h-11 w-11 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-colors"
           aria-label="Open navigation menu"
           aria-haspopup="dialog"
         >
@@ -26,11 +26,11 @@ export default function Header({ onMenuClick }: HeaderProps) {
         </button>
       </div>
 
-      {/* Spacer / Navigation links */}
+      {/* Spacer / Platform Home link */}
       <div className="flex items-center gap-3 min-w-0">
         <a
           href={LANDING_URL}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-semibold text-gray-700 hover:text-blue-600 border border-gray-300 hover:border-blue-400 rounded-lg hover:bg-blue-50 transition-all focus-visible:outline-blue-500 min-h-[38px]"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-semibold text-gray-300 hover:text-white border border-white/10 hover:border-gray-500 rounded-xl hover:bg-white/5 transition-all focus-visible:outline-blue-500 min-h-[38px]"
           aria-label="Return to SentinelAI Main Platform"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
@@ -44,30 +44,30 @@ export default function Header({ onMenuClick }: HeaderProps) {
         {/* Bell */}
         <Link
           to="/alerts"
-          className="inline-flex items-center justify-center h-11 w-11 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-colors"
+          className="inline-flex items-center justify-center h-11 w-11 rounded-full text-gray-300 hover:text-blue-400 hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-colors"
           aria-label="View system alerts"
         >
           <Bell className="h-5 w-5" aria-hidden="true" />
         </Link>
 
         {/* Divider */}
-        <div className="hidden sm:block h-6 w-px bg-gray-200 mx-1" aria-hidden="true" />
+        <div className="hidden sm:block h-6 w-px bg-white/10 mx-1" aria-hidden="true" />
 
         {/* Profile link */}
         <Link
           to="/profile"
-          className="inline-flex items-center gap-2.5 h-11 px-2 rounded-lg text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-colors"
+          className="inline-flex items-center gap-2.5 h-11 px-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-colors"
           aria-label="Go to profile settings"
         >
           {/* Avatar */}
           <div
-            className="h-8 w-8 rounded-full bg-slate-800 flex items-center justify-center text-white border border-slate-700 shrink-0"
+            className="h-8 w-8 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0"
             aria-hidden="true"
           >
             <User className="h-4 w-4" />
           </div>
-          {/* Name label — shown sm+ only */}
-          <span className="hidden sm:block text-sm font-semibold text-gray-800 whitespace-nowrap">
+          {/* Name label */}
+          <span className="hidden sm:block text-sm font-semibold text-white whitespace-nowrap">
             Investigator
           </span>
         </Link>
